@@ -1,6 +1,5 @@
 (function()
 {
-
   var rsplit = function(string, regex)
   {
     var 
@@ -14,7 +13,7 @@
     {
       first_idx = result.index;
       last_idx = regex.lastIndex;
-      
+
       if ((first_idx) != 0)
       {
         first_bit = string.substring(0,first_idx);
@@ -31,6 +30,7 @@
       retArr.push(string);
     return retArr;
   };
+
   var chop =  function(string)
   {
     return string.substr(0, string.length - 1);
@@ -67,14 +67,14 @@
         if(options.element == null)
           throw name+'does not exist!'
       }
+
       if(options.element.value)
       {
         this.text = options.element.value
       }
       else
-      {
         this.text = options.element.innerHTML
-      }
+
       this.name = options.element.id
       this.type = '['
     }
@@ -83,24 +83,31 @@
       options.url = EJS.endExt(options.url, this.extMatch);
       if (!this.name)
         this.name = options.url;
+
       var url = options.url
       //options.view = options.absolute_url || options.view || options.;
       var template = EJS.get(this.name /*url*/, this.cache);
+
       if (template)
         return template;
       if (template == EJS.INVALID_PATH)
         return null;
       try
       {
-        this.text = EJS.request( url+(this.cache ? '' : '?'+Math.random() ));
+        var tmpurl = url;
+        if (!this.cache)
+          tmpurl += '?' + Math.random();
+
+        this.text = EJS.request(tmpurl);
       } catch(e) {}
 
       if(this.text == null)
       {
-        throw( {type: 'EJS', message: 'There is no template at '+url} );
+        throw( {type: 'EJS', message: 'There is no template at ' + url} );
       }
       //this.name = url;
     }
+
     var template = new EJS.Compiler(this.text, this.type);
 
     template.compile(options, this.name);
@@ -124,42 +131,45 @@
       this._extra_helpers = extra_helpers;
       var v = new EJS.Helpers(object, extra_helpers || {});
       return this.template.process.call(object, object,v);
-    },
+    }
+    ,
     update : function(element, options)
     {
       if(typeof element == 'string')
-      {
-        element = document.getElementById(element)
-      }
+        element = document.getElementById(element);
+
       if(options == null)
       {
         _template = this;
         return function(object)
         {
-          EJS.prototype.update.call(_template, element, object)
+          EJS.prototype.update.call(_template, element, object);
         }
       }
+
       if(typeof options == 'string')
       {
-        params = {}
-        params.url = options
+        params = {};
+        params.url = options;
         _template = this;
         params.onComplete = function(request)
         {
-          var object = eval( request.responseText )
+          var object = eval(request.responseText)
           EJS.prototype.update.call(_template, element, object)
         }
+
         EJS.ajax_request(params)
       }
       else
-      {
         element.innerHTML = this.render(options)
-      }
-    },
+    }
+    ,
     out : function()
     {
       return this.template.out;
-    },
+    }
+    ,
+
     /**
      * Sets options on this view to be rendered with.
      * @param {Object} options
@@ -180,23 +190,48 @@
     if(!path)
       return null;
     
-    match.lastIndex = 0
-    return path + (match.test(path) ? '' : this.ext)
+    match.lastIndex = 0;
+    if (!match.test(path))
+      path += this.ext;
+    return path;
   }
-
 
   /* @Static*/
   EJS.Scanner = function(source, left, right)
   {
-    extend(this,
-        {left_delimiter:   left +'%',
-         right_delimiter:   '%'+right,
-         double_left:     left+'%%',
-         double_right:    '%%'+right,
-         left_equal:     left+'%=',
-         left_comment:   left+'%#'})
+    extend(
+      this,
+      {
+        left_delimiter:   left + '%',
+        right_delimiter:  '%'  + right,
+        double_left:      left + '%%',
+        double_right:     '%%' + right,
+        left_equal:       left + '%=',
+        left_comment:     left + '%#'})
 
-    this.SplitRegexp = left=='[' ? /(\[%%)|(%%\])|(\[%=)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/ : new RegExp('('+this.double_left+')|(%%'+this.double_right+')|('+this.left_equal+')|('+this.left_comment+')|('+this.left_delimiter+')|('+this.right_delimiter+'\n)|('+this.right_delimiter+')|(\n)') ;
+    this.SplitRegexp = 
+        left == '['
+      ?
+        /(\[%%)|(%%\])|(\[%=)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/
+      : 
+        new RegExp
+          (
+            '('
+            + this.double_left
+            + ')|(%%'
+            + this.double_right
+            + ')|('
+            + this.left_equal
+            + ')|('
+            + this.left_comment
+            + ')|('
+            + this.left_delimiter
+            + ')|('
+            + this.right_delimiter
+            + '\n)|('
+            + this.right_delimiter
+            + ')|(\n)'
+          );
 
     this.source = source;
     this.stag = null;
@@ -207,10 +242,13 @@
   {
     if(input == null || input === undefined)
       return '';
+
     if(input instanceof Date)
       return input.toDateString();
+
     if(input.toString) 
       return input.toString();
+
     return '';
   };
 
@@ -224,7 +262,8 @@
       if (!this.source == '')
       {
         var source_split = rsplit(this.source, /\n/);
-        for(var i=0; i<source_split.length; i++)
+
+        for(var i = 0; i < source_split.length; i++)
         {
           var item = source_split[i];
           this.scanline(item, regex, block);
@@ -234,20 +273,21 @@
     scanline: function(line, regex, block)
     {
       this.lines++;
+      
       var line_split = rsplit(line, regex);
       
-      for(var i=0; i<line_split.length; i++)
+      for(var i = 0; i < line_split.length; i++)
       {
         var token = line_split[i];
-        if (token != null)
+        if (token == null)
+          continue;
+
+        try
         {
-          try
-          {
-            block(token, this);
-          } catch(e)
-          {
-            throw {type: 'EJS.Scanner', line: this.lines};
-          }
+          block(token, this);
+        } catch(e)
+        {
+          throw {type: 'EJS.Scanner', line: this.lines};
         }
       }
     }
@@ -261,7 +301,7 @@
     this.pre_cmd = pre_cmd;
     this.post_cmd = post_cmd;
     
-    for (var i=0; i<this.pre_cmd.length; i++)
+    for (var i = 0; i < this.pre_cmd.length; i++)
       this.push(pre_cmd[i]);
   };
 
@@ -283,10 +323,10 @@
     {
       if (this.line.length <= 0)
         return;
-      for (var i=0; i<this.post_cmd.length; i++)
-      {
+
+      for (var i = 0; i < this.post_cmd.length; i++)
         this.push(pre_cmd[i]);
-      }
+
       this.script = this.script + this.line.join('; ');
       line = null;
     }
@@ -308,14 +348,10 @@
         this.source = source;
       }
       else if (source.innerHTML)
-      {
         this.source = source.innerHTML;
-      } 
       
       if (typeof this.source != 'string')
-      {
         this.source = "";
-      }
     }
 
     left = left || '<';
@@ -347,6 +383,7 @@
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);    
       var content = '';
+
       var clean = function(content)
       {
         content = content.replace(/\\/g, '\\\\');
@@ -468,7 +505,6 @@
     }
   };
 
-
   //type, cache, folder
   /**
    * Sets default options for all views
@@ -496,14 +532,19 @@
     EJS.type = options.type != null ? options.type : EJS.type;
     EJS.ext = options.ext != null ? options.ext : EJS.ext;
     
-    var templates_directory = EJS.templates_directory || {}; //nice and private container
-    EJS.templates_directory = templates_directory;
+    var templates_directory = EJS.templates_directory; //nice and private container
+
+    if (!EJS.templates_directory)
+      EJS.templates_directory = templates_directory = {}
+    
     EJS.get = function(path, cache)
     {
       if(cache == false)
         return null;
+
       if(templates_directory[path])
         return templates_directory[path];
+
       return null;
     };
     
@@ -511,7 +552,7 @@
     { 
       if(path == null)
         return;
-      templates_directory[path] = template ;
+      templates_directory[path] = template;
     };
     
     EJS.INVALID_PATH = -1;
@@ -564,10 +605,17 @@
     {
       if(input == null || input === undefined)
         return null_text || '';
+      
       if(input instanceof Date)
         return input.toDateString();
+      
       if(input.toString)
-        return input.toString().replace(/\n/g, '<br />').replace(/''/g, "'");
+        return 
+          input
+            .toString()
+            .replace(/\n/g, '<br />')
+            .replace(/''/g, "'");
+      
       return '';
     }
   };
@@ -595,9 +643,12 @@
       try
       {
         var request = factories[i]();
-        if (request != null)  return request;
+        if (request != null)
+          return request;
       }
-      catch(e) { continue; }
+      catch(e)
+      {
+      }
     }
   }
     
@@ -605,7 +656,7 @@
   {
     var request = new EJS.newRequest()
     request.open("GET", path, false);
-       
+
     try
     {
       request.send(null);
@@ -614,8 +665,13 @@
     {
       return null;
     }
-       
-    if ( request.status == 404 || request.status == 2 ||(request.status == 0 && request.responseText == '') )
+
+    if (request.status == 404)
+      return null;
+    if (request.status == 2)
+      return null;
+    
+    if (request.status == 0 && request.responseText == '') 
       return null;
        
     return request.responseText
@@ -627,18 +683,20 @@
       params.method = 'GET';
 
     var request = new EJS.newRequest();
+
     request.onreadystatechange = function()
     {
-      if(request.readyState == 4)
+      if(request.readyState != 4)
+        return;
+
+      // WHAT???
+      if(request.status == 200)
       {
-        if(request.status == 200)
-        {
-          params.onComplete(request);
-        }
-        else
-        {
-          params.onComplete(request);
-        }
+        params.onComplete(request);
+      }
+      else
+      {
+        params.onComplete(request);
       }
     }
     
