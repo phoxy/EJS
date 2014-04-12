@@ -640,16 +640,23 @@
 
     for(var i = 0; i < factories.length; i++)
     {
+      var ret = null;
+      var func = factories[i];
+
       try
       {
-        var request = factories[i]();
-        if (request != null)
-          return request;
+        ret = func();
       }
       catch(e)
       {
+        continue;
       }
+
+      newRequest = func;
+      return ret;
     }
+    
+    throw "Request object type not found";
   }
     
   EJS.request = function(path)
