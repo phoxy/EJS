@@ -440,7 +440,7 @@
               }
               break;
             case scanner.left_equal:
-              buff.push(insert_cmd + "(EJS.Scanner.to_text(" + content + ")))");
+              buff.push("\n" + insert_cmd + "(EJS.Scanner.to_text(" + content + ")))");
               break;
             }
 
@@ -469,38 +469,66 @@
       var to_be_evaled = 
        '/*'
        + name
-       + '*/this.process = function(_CONTEXT,_VIEW) { try { with(_VIEW) { with (_CONTEXT) {'
+       + '*/\n\
+        this.process = function(_CONTEXT,_VIEW)\n\
+        {\n\
+          try\n\
+          {\n\
+            with(_VIEW)\n\
+            {\n\
+              with (_CONTEXT)\n\
+              {\n'
        + this.out
-       + " return ___ViewO.join('');}}}catch(e){e.lineNumber=null;throw e;}};";
+       + '\n\
+                return ___ViewO.join("");\n\
+              }\n\
+            }\n\
+          }\n\
+          catch(e)\n\
+          {\n\
+            e.lineNumber = null;\n\
+            throw e;\n\
+          }\n\
+        };\n';
       
       try
       {
         eval(to_be_evaled);
-      } catch(e)
+      }
+      catch(e)
       {
-        if(typeof JSLINT != 'undefined')
+        if(typeof JSLINT == 'undefined')
         {
-          JSLINT(this.out);
-          for(var i = 0; i < JSLINT.errors.length; i++)
-          {
-            var error = JSLINT.errors[i];
-            if(error.reason != "Unnecessary semicolon.")
-            {
-              error.line++;
-              var e = new Error();
-              e.lineNumber = error.line;
-              e.message = error.reason;
-
-              if(options.view)
-                e.fileName = options.view;
-              throw e;
-            }
-          }
-        }
-        else
-        {
+          console.log("We strongly recomend you include JSLINT", "https://github.com/douglascrockford/JSLint");
           throw e;
         }
+
+        JSLINT(this.out);
+        var first_e = null;
+
+        for (var i = 0; i < JSLINT.errors.length; i++)
+        {
+          var error = JSLINT.errors[i];
+          if(error.reason != "Unnecessary semicolon.")
+          {
+            error.line++;
+
+            var e = new Error();
+
+            e.lineNumber = error.line;
+            e.message = error.reason;
+
+            if(options.view)
+              e.fileName = options.view;
+
+            if (first_e === null)
+              first_e = e;
+
+            console.log("Detected JSError: ", error, e);
+          }
+        }
+
+        throw first_e;
       }
     }
   };
@@ -677,10 +705,10 @@
       return null;
     if (request.status == 2)
       return null;
-    
+
     if (request.status == 0 && request.responseText == '') 
       return null;
-       
+
     return request.responseText
   }
 
