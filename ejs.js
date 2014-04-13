@@ -130,7 +130,8 @@
       object = object || {};
       this._extra_helpers = extra_helpers;
       var v = new EJS.Helpers(object, extra_helpers || {});
-      return this.template.process.call(object, object,v);
+      var obj = this.template.process(object, v);
+      return obj._EJS_EXECUTE_FUNC();
     }
     ,
     update : function(element, options)
@@ -335,7 +336,7 @@
 
   EJS.Compiler = function(source, left)
   {
-    this.pre_cmd = ['var ___ViewO = [];'];
+    this.pre_cmd = ['var ___ViewO = []'];
     this.post_cmd = new Array();
     this.source = ' ';  
 
@@ -465,37 +466,73 @@
 
       buff.close();
       this.out = buff.script + ";";
+/*
+  this.process = function(_CONTEXT,_VIEW)
+  {
+    this.ejs_functor = function()
+    {
+      // HERE WILL BE CODE COMPILED FROM EJS
+      return ___ViewO.join("");
+    };
 
+    this.process = function(_CONTEXT, _VIEW)
+    {
+      var ret = 
+      {
+        _EJS_EXECUTE_FUNC : this.ejs_functor,
+      };
+      
+      for (var k in _CONTEXT)
+        if (_CONTEXT.hasOwnProperty(k))
+          ret[k] = _CONTEXT[k];
+      for (var k in _VIEW)
+        if (_VIEW.hasOwnProperty(k))
+          ret[k] = _VIEW[k];
+      return ret;
+    }
+
+    return this.process(_CONTEXT, _VIEW);
+  }; 
+  */
       var to_be_evaled = 
        '/*'
        + name
-       + '*/\n\
-        this.process = function(_CONTEXT,_VIEW)\n\
-        {\n\
-          try\n\
-          {\n\
-            with(_VIEW)\n\
-            {\n\
-              with (_CONTEXT)\n\
-              {\n'
-       + this.out
+       + '*/\n'
        + '\n\
-                return ___ViewO.join("");\n\
-              }\n\
-            }\n\
-          }\n\
-          catch(e)\n\
-          {\n\
-            e.lineNumber = null;\n\
-            throw e;\n\
-          }\n\
-        };\n';
+  this.process = function(_CONTEXT,_VIEW)\n\
+  {\n\
+    this.ejs_functor = function()\n\
+    {\n'
+      // HERE WILL BE CODE COMPILED FROM EJS
+    + this.out
+    + '\n\
+      return ___ViewO.join("");\n\
+    };\n\
+\n\
+    this.process = function(_CONTEXT, _VIEW)\n\
+    {\n\
+      var ret = \n\
+      {\n\
+        _EJS_EXECUTE_FUNC : this.ejs_functor,\n\
+      };\n\
+\n\
+      for (var k in _CONTEXT)\n\
+        if (_CONTEXT.hasOwnProperty(k))\n\
+          ret[k] = _CONTEXT[k];\n\
+      for (var k in _VIEW)\n\
+        if (_VIEW.hasOwnProperty(k))\n\
+          ret[k] = _VIEW[k];\n\
+      return ret;\n\
+    };\n\
+\n\
+    return this.process(_CONTEXT, _VIEW);\n\
+  };\n';
       
       try
       {
         eval(to_be_evaled);
       }
-      catch(e)
+        catch(e)
       {
         if(typeof JSLINT == 'undefined')
         {
