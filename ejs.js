@@ -111,6 +111,7 @@
     var template = new EJS.Compiler(this.text, this.type);
 
     template.compile(options, this.name);
+    
 
     EJS.update(this.name, this);
     this.template = template;
@@ -131,7 +132,32 @@
       this._extra_helpers = extra_helpers;
       var v = new EJS.Helpers(object, extra_helpers || {});
       var obj = this.template.process(object, v);
-      return obj._EJS_EXECUTE_FUNC();
+      obj.first = function()
+      {
+        console.log(
+          "EJS.first()", 
+          "Ancor only in my mind. It not found in real world. Maybe i just fancy?", 
+          this._EJS_EXECUTE_FUNC);
+        // Maybe you trying access first element to early.
+        // Firstly all design rendering as text, and storing as string.
+        // Your javascript helping render it(probably you called ejs.first() from that timing)
+        // Secondly if client want to, rendered design attach to DOM page (and ejs.first() gets enabled)
+        // Try using setTimeout(..., 0) or phoxy.Defer(..., 0) to catch into
+      };
+      var ret = obj._EJS_EXECUTE_FUNC();
+      obj.first = function()
+      {
+        if (typeof(this._EJS_RELATED.first) != 'undefined')
+          return this._EJS_RELATED.first;
+
+        var ancor = document.getElementById(this._EJS_RELATED.ancor_id);
+        if (ancor == null)
+          return null;
+        this._EJS_RELATED.first = ancor.nextSibling;
+        ancor.remove();
+        return this.first();
+      };
+      return ret;
     }
     ,
     update : function(element, options)
@@ -336,7 +362,22 @@
 
   EJS.Compiler = function(source, left)
   {
-    this.pre_cmd = ['var ___ViewO = []'];
+    function RandomNumb()
+    {
+      var ret = "EJS_ANCOR_";
+
+      for (var i = 0; i < 10; i++)
+        ret += '0' + Math.floor(Math.random() * 10);
+
+      return ret;
+    }
+
+    this.EJS_RELATED = {};
+
+    this.EJS_RELATED.ancor_id = RandomNumb();
+    var ancor =  "<div id=\"" + this.EJS_RELATED.ancor_id + "\" ></div>";
+
+    this.pre_cmd = ['var ___ViewO = []', "___ViewO.push('" + ancor + "')"];
     this.post_cmd = new Array();
     this.source = ' ';  
 
@@ -480,6 +521,8 @@
       var ret = 
       {
         _EJS_EXECUTE_FUNC : this.ejs_functor,
+        _EJS_RELATED : this.EJS_RELATED,
+        first : this.EJS_RELATED.first,
       };
       
       for (var k in _CONTEXT)
@@ -514,6 +557,8 @@
       var ret = \n\
       {\n\
         _EJS_EXECUTE_FUNC : this.ejs_functor,\n\
+        _EJS_RELATED : this.EJS_RELATED,\n\
+        first : this.EJS_RELATED.first,\n\
       };\n\
 \n\
       for (var k in _CONTEXT)\n\
