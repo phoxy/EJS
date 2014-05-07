@@ -132,8 +132,10 @@
       this._extra_helpers = extra_helpers;
       var v = new EJS.Helpers(object, extra_helpers || {});
       var obj = this.template.process(object, v);
-      obj.first = function()
+      obj.first = function(safe)
       {
+        if (safe)
+          return;
         console.log(
           "EJS.first()", 
           "Ancor only in my mind. It not found in real world. Maybe i just fancy?", 
@@ -157,6 +159,10 @@
         ancor.remove();
         return this.first();
       };
+      setTimeout(function()
+      {
+        obj.first(true);
+      });
       return ret;
     }
     ,
