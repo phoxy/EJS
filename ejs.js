@@ -133,6 +133,15 @@
       var v = new EJS.Helpers(object, extra_helpers || {});
       var obj = this.template.process(object, v);
       
+      obj.Defer = function(cb, time)
+      {
+        var that = this;
+        setTimeout(function()
+        {
+          cb.apply(that);
+        }, time);
+      };
+      
       obj.first = function(safe)
       {
         if (safe)
@@ -175,9 +184,10 @@
         ancor.remove();
         return this.first();
       };
-      setTimeout(function()
+      
+      obj.Defer(function()
       {
-        obj.first(true);
+        this.first(true);
       });
       return ret;
     }
