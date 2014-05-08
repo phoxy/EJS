@@ -525,10 +525,7 @@
 
     this.process = function(_CONTEXT, _VIEW)
     {
-      var ret = 
-      {
-        _EJS_EXECUTE_FUNC : this.ejs_functor,
-      };
+      var ret = {}
       
       for (var k in _CONTEXT)
         if (_CONTEXT.hasOwnProperty(k))
@@ -536,6 +533,7 @@
       for (var k in _VIEW)
         if (_VIEW.hasOwnProperty(k))
           ret[k] = _VIEW[k];
+      ret._EJS_EXECUTE_FUNC = this.ejs_functor;
       return ret;
     }
 
@@ -559,10 +557,7 @@
 \n\
     this.process = function(_CONTEXT, _VIEW)\n\
     {\n\
-      var ret = \n\
-      {\n\
-        _EJS_EXECUTE_FUNC : this.ejs_functor,\n\
-      };\n\
+      var ret = {};\n\
 \n\
       for (var k in _CONTEXT)\n\
         if (_CONTEXT.hasOwnProperty(k))\n\
@@ -570,6 +565,7 @@
       for (var k in _VIEW)\n\
         if (_VIEW.hasOwnProperty(k))\n\
           ret[k] = _VIEW[k];\n\
+      ret._EJS_EXECUTE_FUNC = this.ejs_functor;\n\
       return ret;\n\
     };\n\
 \n\
