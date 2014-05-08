@@ -111,6 +111,7 @@
     var template = new EJS.Compiler(this.text, this.type);
 
     template.compile(options, this.name);
+    
 
     EJS.update(this.name, this);
     this.template = template;
@@ -130,7 +131,65 @@
       object = object || {};
       this._extra_helpers = extra_helpers;
       var v = new EJS.Helpers(object, extra_helpers || {});
-      return this.template.process.call(object, object,v);
+      var obj = this.template.process(object, v);
+      
+      obj.Defer = function(cb, time)
+      {
+        var that = this;
+        setTimeout(function()
+        {
+          cb.apply(that);
+        }, time);
+      };
+      
+      obj.first = function(safe)
+      {
+        if (safe)
+          return;
+        console.log(
+          "EJS.first()", 
+          "Ancor only in my mind. It not found in real world. Maybe i just fancy?", 
+          this._EJS_EXECUTE_FUNC);
+        // Maybe you trying access first element to early.
+        // Firstly all design rendering as text, and storing as string.
+        // Your javascript helping render it(probably you called ejs.first() from that timing)
+        // Secondly if client want to, rendered design attach to DOM page (and ejs.first() gets enabled)
+        // Try using setTimeout(..., 0) or phoxy.Defer(..., 0) to catch into
+      };
+      var ret = obj._EJS_EXECUTE_FUNC();
+      
+      function RandomNumb()
+      {
+        var ret = "EJS_ANCOR_";
+
+        for (var i = 0; i < 10; i++)
+          ret += '0' + Math.floor(Math.random() * 10);
+
+        return ret;
+      }      
+
+      var ancor_id = RandomNumb();
+      var ancor =  "<div id=\"" + ancor_id + "\" ></div>";
+      obj._EJS_RELATED = {};
+
+      obj.first = function()
+      {
+        if (typeof(this._EJS_RELATED.first) != 'undefined')
+          return this._EJS_RELATED.first;
+
+        var ancor = document.getElementById(ancor_id);
+        if (ancor == null)
+          return null;
+        this._EJS_RELATED.first = ancor.nextSibling;
+        ancor.remove();
+        return this.first();
+      };
+      
+      obj.Defer(function()
+      {
+        this.first(true);
+      });
+      return ret;
     }
     ,
     update : function(element, options)
@@ -335,7 +394,7 @@
 
   EJS.Compiler = function(source, left)
   {
-    this.pre_cmd = ['var ___ViewO = [];'];
+    this.pre_cmd = ['var ___ViewO = []'];
     this.post_cmd = new Array();
     this.source = ' ';  
 
@@ -465,37 +524,69 @@
 
       buff.close();
       this.out = buff.script + ";";
+/*
+  this.process = function(_CONTEXT,_VIEW)
+  {
+    this.ejs_functor = function()
+    {
+      // HERE WILL BE CODE COMPILED FROM EJS
+      return ___ViewO.join("");
+    };
 
+    this.process = function(_CONTEXT, _VIEW)
+    {
+      var ret = {}
+      
+      for (var k in _CONTEXT)
+        if (_CONTEXT.hasOwnProperty(k))
+          ret[k] = _CONTEXT[k];
+      for (var k in _VIEW)
+        if (_VIEW.hasOwnProperty(k))
+          ret[k] = _VIEW[k];
+      ret._EJS_EXECUTE_FUNC = this.ejs_functor;
+      return ret;
+    }
+
+    return this.process(_CONTEXT, _VIEW);
+  }; 
+  */
       var to_be_evaled = 
        '/*'
        + name
-       + '*/\n\
-        this.process = function(_CONTEXT,_VIEW)\n\
-        {\n\
-          try\n\
-          {\n\
-            with(_VIEW)\n\
-            {\n\
-              with (_CONTEXT)\n\
-              {\n'
-       + this.out
+       + '*/\n'
        + '\n\
-                return ___ViewO.join("");\n\
-              }\n\
-            }\n\
-          }\n\
-          catch(e)\n\
-          {\n\
-            e.lineNumber = null;\n\
-            throw e;\n\
-          }\n\
-        };\n';
+  this.process = function(_CONTEXT,_VIEW)\n\
+  {\n\
+    this.ejs_functor = function()\n\
+    {\n'
+      // HERE WILL BE CODE COMPILED FROM EJS
+    + this.out
+    + '\n\
+      return ___ViewO.join("");\n\
+    };\n\
+\n\
+    this.process = function(_CONTEXT, _VIEW)\n\
+    {\n\
+      var ret = {};\n\
+\n\
+      for (var k in _CONTEXT)\n\
+        if (_CONTEXT.hasOwnProperty(k))\n\
+          ret[k] = _CONTEXT[k];\n\
+      for (var k in _VIEW)\n\
+        if (_VIEW.hasOwnProperty(k))\n\
+          ret[k] = _VIEW[k];\n\
+      ret._EJS_EXECUTE_FUNC = this.ejs_functor;\n\
+      return ret;\n\
+    };\n\
+\n\
+    return this.process(_CONTEXT, _VIEW);\n\
+  };\n';
       
       try
       {
         eval(to_be_evaled);
       }
-      catch(e)
+        catch(e)
       {
         if(typeof JSLINT == 'undefined')
         {
