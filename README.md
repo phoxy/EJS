@@ -1,4 +1,4 @@
-This is UNCOMPATIBLE for from http://embeddedjs.com/
+This is *UNCOMPATIBLE* fork from http://embeddedjs.com/
 Embedded JavaScript
 
 ===
