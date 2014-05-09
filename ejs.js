@@ -529,6 +529,7 @@
   {
     this.ejs_functor = function()
     {
+      var __context = this;
       // HERE WILL BE CODE COMPILED FROM EJS
       return ___ViewO.join("");
     };
@@ -558,7 +559,8 @@
   this.process = function(_CONTEXT,_VIEW)\n\
   {\n\
     this.ejs_functor = function()\n\
-    {\n'
+    {\n\
+      var __context = this;\n'
       // HERE WILL BE CODE COMPILED FROM EJS
     + this.out
     + '\n\
