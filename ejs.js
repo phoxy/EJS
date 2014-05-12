@@ -180,7 +180,13 @@
         var ancor = document.getElementById(ancor_id);
         if (ancor == null)
           return null;
-        this._EJS_RELATED.first = ancor.nextSibling;
+        var elem = ancor;
+        do
+        {
+          elem = elem.nextSibling;
+        } while (elem && elem.nodeType !== 1);
+        
+        this._EJS_RELATED.first = elem;
         ancor.remove();
         return this.first();
       };
