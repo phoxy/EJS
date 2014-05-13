@@ -120,6 +120,11 @@
   /* @Prototype*/
   EJS.prototype =
   {
+    _EJS_HOOK_first : function(result)
+    {
+      return result;
+    }
+    ,
     /**
      * Renders an object with extra view helpers attached to the view.
      * @param {Object} object data to be rendered
@@ -166,16 +171,17 @@
           ret += '0' + Math.floor(Math.random() * 10);
 
         return ret;
-      }      
+      }
 
       var ancor_id = RandomNumb();
       var ancor =  "<div id=\"" + ancor_id + "\" ></div>";
       obj._EJS_RELATED = {};
 
+      var hook = this._EJS_HOOK_first;
       obj.first = function()
       {
         if (typeof(this._EJS_RELATED.first) != 'undefined')
-          return this._EJS_RELATED.first;
+          return hook(this._EJS_RELATED.first);
 
         var ancor = document.getElementById(ancor_id);
         if (ancor == null)
