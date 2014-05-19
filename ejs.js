@@ -4,7 +4,7 @@
 
   EJS = function( options )
   {
-    this.construct(options);
+    this.construct.apply(this, arguments);
   };
 
 
@@ -298,48 +298,53 @@
   };
 
 
-  EJS.Compiler = function(source, left)
+  EJS.Compiler = function()
   {
-    this.pre_cmd = ['var ___ViewO = [];'];
-    this.post_cmd = new Array();
-    this.source = ' ';  
-
-    if (source != null)
-    {
-      if (typeof source == 'string')
-      {
-        source = source.replace(/\r\n/g, "\n");
-        source = source.replace(/\r/g,   "\n");
-        this.source = source;
-      }
-      else if (source.innerHTML)
-        this.source = source.innerHTML;
-      
-      if (typeof this.source != 'string')
-        this.source = "";
-    }
-
-    left = left || '<';
-    var right = '>';
-
-    switch(left)
-    {
-    case '[':
-      right = ']';
-      break;
-    case '<':
-      break;
-    default:
-      throw left + ' is not a supported deliminator';
-      break;
-    }
-
-    this.scanner = new EJS.Scanner(this.source, left, right);
-    this.out = '';
-  };
+    this.construct.apply(this, arguments);
+  }
 
   EJS.Compiler.prototype =
   {
+    construct : function(source, left)
+    {
+      this.pre_cmd = ['var ___ViewO = [];'];
+      this.post_cmd = new Array();
+      this.source = ' ';  
+
+      if (source != null)
+      {
+        if (typeof source == 'string')
+        {
+          source = source.replace(/\r\n/g, "\n");
+          source = source.replace(/\r/g,   "\n");
+          this.source = source;
+        }
+        else if (source.innerHTML)
+          this.source = source.innerHTML;
+        
+        if (typeof this.source != 'string')
+          this.source = "";
+      }
+
+      left = left || '<';
+      var right = '>';
+
+      switch(left)
+      {
+      case '[':
+        right = ']';
+        break;
+      case '<':
+        break;
+      default:
+        throw left + ' is not a supported deliminator';
+        break;
+      }
+
+      this.scanner = new EJS.Scanner(this.source, left, right);
+      this.out = '';
+    }
+    ,
     compile: function(options, name)
     {
       options = options || {};
