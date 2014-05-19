@@ -10,12 +10,50 @@
   /* @Prototype*/
   EJS.prototype =
   {
-    render : function(object, extra_helpers)
+    render : function(object)
     {
-      object = object || {};
-      //this._extra_helpers = extra_helpers;
-      //return this.template.process.call(object, object,v);
-      return this.template.process.call(object, object);
+      var obj = this.template.process(object);
+      var ret = obj._EJS_EXECUTE_FUNC.call(obj.across);
+
+      function RandomNumb()
+      {
+        var ret = "EJS_ANCOR_";
+
+        for (var i = 0; i < 10; i++)
+          ret += '0' + Math.floor(Math.random() * 10);
+
+        return ret;
+      }
+
+      var ancor_id = RandomNumb();
+      var ancor =  "<div id=\"" + ancor_id + "\" ></div>";
+
+      var hook = obj.hook_first;
+
+      obj.across.first = function()
+      {
+        if (typeof(obj.first) != 'undefined')
+          return hook(obj.first);
+
+        var ancor = document.getElementById(ancor_id);
+        if (ancor == null)
+          return null;
+        var elem = ancor;
+        do
+        {
+          elem = elem.nextSibling;
+        } while (elem && elem.nodeType !== 1);
+        
+        obj.first = elem;
+        ancor.remove();
+        return this.first();
+      };
+
+      obj.across.Defer(function()
+      {
+        this.first(true);
+      });
+      return ancor + ret;
     }
     ,
     update : function(element, options)
@@ -178,6 +216,49 @@
       path += this.ext;
     return path;
   }
+  
+  EJS.Canvas = function(obj)
+  {
+    for (var k in obj)
+      if (obj.hasOwnProperty(k))
+        this.across[k] = obj[k];
+  };
+  
+  EJS.Canvas.prototype =
+  {
+    across :
+    {
+      Defer : function(cb, time)
+      {
+        var that = this;
+        setTimeout(function()
+        {
+          cb.apply(that);
+        }, time);
+      }
+      ,
+      first : function(safe)
+      {
+        if (safe)
+          return;
+        console.log(
+          "EJS.Canvas",
+          "EJS.Canvas.first() called to early. Use EJS.Canvas.Defer, or any other delay method",
+          this._EJS_EXECUTE_FUNC);
+
+        // Maybe you trying access first element to early.
+        // Firstly all design rendering as text, and storing as string.
+        // Your javascript helping render it(probably you called ejs.first() from that timing)
+        // Secondly if client want to, rendered design attach to DOM page (and ejs.first() gets enabled)
+        // Try using setTimeout(..., 0) or phoxy.Defer(..., 0) to catch into
+      }
+    }
+    ,
+    hook_first : function(element)
+    {
+      return element;
+    }
+  };
 
   EJS.Compiler = function(source, left)
   {
@@ -312,7 +393,7 @@
       buff.close();
       this.out = buff.script + ";";
 /*
-  this.process = function(_CONTEXT,_VIEW)
+  this.process = function(_CONTEXT)
   {
     this.ejs_functor = function()
     {
@@ -321,21 +402,15 @@
       return ___ViewO.join("");
     };
 
-    this.process = function(_CONTEXT, _VIEW)
+    this.process = function(_CONTEXT)
     {
-      var ret = {}
-      
-      for (var k in _CONTEXT)
-        if (_CONTEXT.hasOwnProperty(k))
-          ret[k] = _CONTEXT[k];
-      for (var k in _VIEW)
-        if (_VIEW.hasOwnProperty(k))
-          ret[k] = _VIEW[k];
+      var ret = new EJS.Canvas(_CONTEXT);
+
       ret._EJS_EXECUTE_FUNC = this.ejs_functor;
       return ret;
     }
 
-    return this.process(_CONTEXT, _VIEW);
+    return this.process(_CONTEXT);
   }; 
   */
       var to_be_evaled = 
@@ -343,7 +418,7 @@
        + name
        + '*/\n'
        + '\n\
-  this.process = function(_CONTEXT,_VIEW)\n\
+  this.process = function(_CONTEXT)\n\
   {\n\
     this.ejs_functor = function()\n\
     {\n\
@@ -354,21 +429,15 @@
       return ___ViewO.join("");\n\
     };\n\
 \n\
-    this.process = function(_CONTEXT, _VIEW)\n\
+    this.process = function(_CONTEXT)\n\
     {\n\
-      var ret = {};\n\
+      var ret = new EJS.Canvas(_CONTEXT);\n\
 \n\
-      for (var k in _CONTEXT)\n\
-        if (_CONTEXT.hasOwnProperty(k))\n\
-          ret[k] = _CONTEXT[k];\n\
-      for (var k in _VIEW)\n\
-        if (_VIEW.hasOwnProperty(k))\n\
-          ret[k] = _VIEW[k];\n\
       ret._EJS_EXECUTE_FUNC = this.ejs_functor;\n\
       return ret;\n\
     };\n\
 \n\
-    return this.process(_CONTEXT, _VIEW);\n\
+    return this.process(_CONTEXT);\n\
   };\n';
       
       try
