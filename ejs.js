@@ -179,143 +179,6 @@
     return path;
   }
 
-  /* @Static*/
-  EJS.Scanner = function(source, left, right)
-  {
-    extend(
-      this,
-      {
-        left_delimiter:   left + '%',
-        right_delimiter:  '%'  + right,
-        double_left:      left + '%%',
-        double_right:     '%%' + right,
-        left_equal:       left + '%=',
-        left_comment:     left + '%#'})
-
-    this.SplitRegexp = 
-        left == '['
-      ?
-        /(\[%%)|(%%\])|(\[%=)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/
-      : 
-        new RegExp
-          (
-            '('
-            + this.double_left
-            + ')|(%%'
-            + this.double_right
-            + ')|('
-            + this.left_equal
-            + ')|('
-            + this.left_comment
-            + ')|('
-            + this.left_delimiter
-            + ')|('
-            + this.right_delimiter
-            + '\n)|('
-            + this.right_delimiter
-            + ')|(\n)'
-          );
-
-    this.source = source;
-    this.stag = null;
-    this.lines = 0;
-  };
-
-  EJS.Scanner.to_text = function(input)
-  {
-    if(input == null || input === undefined)
-      return '';
-
-    if(input instanceof Date)
-      return input.toDateString();
-
-    if(input.toString) 
-      return input.toString();
-
-    return '';
-  };
-
-  EJS.Scanner.prototype =
-  {
-    scan: function(block)
-    {
-      scanline = this.scanline;
-      regex = this.SplitRegexp;
-     
-      if (!this.source == '')
-      {
-        var source_split = rsplit(this.source, /\n/);
-
-        for(var i = 0; i < source_split.length; i++)
-        {
-          var item = source_split[i];
-          this.scanline(item, regex, block);
-        }
-      }
-    },
-    scanline: function(line, regex, block)
-    {
-      this.lines++;
-      
-      var line_split = rsplit(line, regex);
-      
-      for(var i = 0; i < line_split.length; i++)
-      {
-        var token = line_split[i];
-        if (token == null)
-          continue;
-
-        try
-        {
-          block(token, this);
-        } catch(e)
-        {
-          throw {type: 'EJS.Scanner', line: this.lines};
-        }
-      }
-    }
-  };
-
-
-  EJS.Buffer = function(pre_cmd, post_cmd)
-  {
-    this.line = new Array();
-    this.script = "";
-    this.pre_cmd = pre_cmd;
-    this.post_cmd = post_cmd;
-    
-    for (var i = 0; i < this.pre_cmd.length; i++)
-      this.push(pre_cmd[i]);
-  };
-
-  EJS.Buffer.prototype = 
-  {
-    push: function(cmd)
-    {
-      this.line.push(cmd);
-    },
-
-    cr: function()
-    {
-      this.script = this.script + this.line.join('; ');
-      this.line = new Array();
-      this.script = this.script + "\n";
-    },
-
-    close: function()
-    {
-      if (this.line.length <= 0)
-        return;
-
-      for (var i = 0; i < this.post_cmd.length; i++)
-        this.push(pre_cmd[i]);
-
-      this.script = this.script + this.line.join('; ');
-      line = null;
-    }
-  };
-
-
   EJS.Compiler = function(source, left)
   {
     this.pre_cmd = ['var ___ViewO = []'];
@@ -550,27 +413,11 @@
     }
   };
 
-  //type, cache, folder
-  /**
-   * Sets default options for all views
-   * @param {Object} options Set view with the following options
-   * <table class="options">
-          <tbody><tr><th>Option</th><th>Default</th><th>Description</th></tr>
-          <tr>
-            <td>type</td>
-            <td>'<'</td>
-            <td>type of magic tags.  Options are '&lt;' or '['
-            </td>
-          </tr>
-          <tr>
-            <td>cache</td>
-            <td>true in production mode, false in other modes</td>
-            <td>true to cache template.
-            </td>
-          </tr>
-    </tbody></table>
-   * 
+  /* Code below DEEP internal
+   * Do not waste your time.
+   * TODO: Refactor
    */
+   
   EJS.config = function(options)
   {
     EJS.cache = options.cache != null ? options.cache : EJS.cache;
@@ -664,6 +511,143 @@
       return '';
     }
   };
+  
+  /* @Static*/
+  EJS.Scanner = function(source, left, right)
+  {
+    extend(
+      this,
+      {
+        left_delimiter:   left + '%',
+        right_delimiter:  '%'  + right,
+        double_left:      left + '%%',
+        double_right:     '%%' + right,
+        left_equal:       left + '%=',
+        left_comment:     left + '%#'})
+
+    this.SplitRegexp = 
+        left == '['
+      ?
+        /(\[%%)|(%%\])|(\[%=)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/
+      : 
+        new RegExp
+          (
+            '('
+            + this.double_left
+            + ')|(%%'
+            + this.double_right
+            + ')|('
+            + this.left_equal
+            + ')|('
+            + this.left_comment
+            + ')|('
+            + this.left_delimiter
+            + ')|('
+            + this.right_delimiter
+            + '\n)|('
+            + this.right_delimiter
+            + ')|(\n)'
+          );
+
+    this.source = source;
+    this.stag = null;
+    this.lines = 0;
+  };
+
+  EJS.Scanner.to_text = function(input)
+  {
+    if(input == null || input === undefined)
+      return '';
+
+    if(input instanceof Date)
+      return input.toDateString();
+
+    if(input.toString) 
+      return input.toString();
+
+    return '';
+  };
+
+  EJS.Scanner.prototype =
+  {
+    scan: function(block)
+    {
+      scanline = this.scanline;
+      regex = this.SplitRegexp;
+     
+      if (!this.source == '')
+      {
+        var source_split = rsplit(this.source, /\n/);
+
+        for(var i = 0; i < source_split.length; i++)
+        {
+          var item = source_split[i];
+          this.scanline(item, regex, block);
+        }
+      }
+    },
+    scanline: function(line, regex, block)
+    {
+      this.lines++;
+      
+      var line_split = rsplit(line, regex);
+      
+      for(var i = 0; i < line_split.length; i++)
+      {
+        var token = line_split[i];
+        if (token == null)
+          continue;
+
+        try
+        {
+          block(token, this);
+        } catch(e)
+        {
+          throw {type: 'EJS.Scanner', line: this.lines};
+        }
+      }
+    }
+  };
+
+
+  EJS.Buffer = function(pre_cmd, post_cmd)
+  {
+    this.line = new Array();
+    this.script = "";
+    this.pre_cmd = pre_cmd;
+    this.post_cmd = post_cmd;
+    
+    for (var i = 0; i < this.pre_cmd.length; i++)
+      this.push(pre_cmd[i]);
+  };
+
+  EJS.Buffer.prototype = 
+  {
+    push: function(cmd)
+    {
+      this.line.push(cmd);
+    },
+
+    cr: function()
+    {
+      this.script = this.script + this.line.join('; ');
+      this.line = new Array();
+      this.script = this.script + "\n";
+    },
+
+    close: function()
+    {
+      if (this.line.length <= 0)
+        return;
+
+      for (var i = 0; i < this.post_cmd.length; i++)
+        this.push(pre_cmd[i]);
+
+      this.script = this.script + this.line.join('; ');
+      line = null;
+    }
+  };
+
 
   EJS.newRequest = function()
   {
