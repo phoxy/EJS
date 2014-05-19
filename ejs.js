@@ -1,12 +1,80 @@
 (function()
 {
   var rsplit, chop, extend;
-
+  
   EJS = function( options )
   {
-    this.construct.apply(this, arguments);
-  };
+    if (typeof options == "string")
+      options = {view: options};
+    
+    this.set_options(options);
+    if(options.precompiled)
+    {
+      this.template = {};
+      this.template.process = options.precompiled;
+      EJS.update(this.name, this);
+      return;
+    }
+    
+    if(options.element)
+    {
+      if(typeof options.element == 'string')
+      {
+        var name = options.element;
+        
+        options.element = document.getElementById(options.element)
+        if(options.element == null)
+          throw name+'does not exist!'
+      }
 
+      if(options.element.value)
+      {
+        this.text = options.element.value
+      }
+      else
+        this.text = options.element.innerHTML
+
+      this.name = options.element.id
+      this.type = '['
+    }
+    else if (options.url)
+    {
+      options.url = EJS.endExt(options.url, this.extMatch);
+      if (!this.name)
+        this.name = options.url;
+
+      var url = options.url
+      //options.view = options.absolute_url || options.view || options.;
+      var template = EJS.get(this.name /*url*/, this.cache);
+
+      if (template)
+        return template;
+      if (template == EJS.INVALID_PATH)
+        return null;
+      try
+      {
+        var tmpurl = url;
+        if (!this.cache)
+          tmpurl += '?' + Math.random();
+
+        this.text = EJS.request(tmpurl);
+      } catch(e) {}
+
+      if(this.text == null)
+      {
+        throw( {type: 'EJS', message: 'There is no template at ' + url} );
+      }
+      //this.name = url;
+    }
+
+    var template = new EJS.Compiler(this.text, this.type);
+
+    template.compile(options, this.name);
+    
+
+    EJS.update(this.name, this);
+    this.template = template;
+  };
 
   /* @Prototype*/
   EJS.prototype =
@@ -126,104 +194,6 @@
         element.innerHTML = this.render(options)
     }
     ,
-    construct : function(options)
-    {
-      if (typeof options == "string")
-        options = {view: options};
-      
-      this.set_options(options);
-      if(options.precompiled)
-        return this.option_routes.precompiled(options);
-
-      if(options.element)
-        options = this.option_routes.element(options);
-      else if (options.url)
-        options = this.option_routes.url(options);
-
-      var template = new EJS.Compiler(this.text, this.type);
-
-      template.compile(options, this.name);
-
-      EJS.update(this.name, this);
-      this.template = template;
-    }
-    ,
-    option_routes :
-    {
-      precompiled : function(options)
-      {
-        this.template = {};
-        this.template.process = options.precompiled;
-        EJS.update(this.name, this);
-        return options;
-      }
-      ,
-      element : function()
-      {
-        if(typeof options.element == 'string')
-        {
-          var name = options.element;
-          
-          options.element = document.getElementById(options.element)
-          if(options.element == null)
-            throw name+'does not exist!'
-        }
-
-        if(options.element.value)
-        {
-          this.text = options.element.value
-        }
-        else
-          this.text = options.element.innerHTML
-
-        this.name = options.element.id
-        this.type = '['
-        
-        return options;
-      }
-      ,
-      url : function()
-      {
-        var endExt = function(path, match)
-        {
-          if(!path)
-            return null;
-
-          match.lastIndex = 0;
-          if (!match.test(path))
-            path += this.ext;
-          return path;
-        };
-
-        options.url = endExt(options.url, this.extMatch);
-        if (!this.name)
-          this.name = options.url;
-
-        var url = options.url
-        //options.view = options.absolute_url || options.view || options.;
-        var template = EJS.get(this.name /*url*/, this.cache);
-
-        if (template)
-          return template;
-        if (template == EJS.INVALID_PATH)
-          return null;
-        try
-        {
-          var tmpurl = url;
-          if (!this.cache)
-            tmpurl += '?' + Math.random();
-
-          this.text = EJS.request(tmpurl);
-        } catch(e) {}
-
-        if(this.text == null)
-        {
-          throw( {type: 'EJS', message: 'There is no template at ' + url} );
-        }
-        //this.name = url;
-      }
-    }
-    ,
     out : function()
     {
       return this.template.out;
@@ -242,6 +212,114 @@
       this.name =  options.name || null;
       this.ext = options.ext || EJS.ext;
       this.extMatch = new RegExp(this.ext.replace(/\./, '\.'));
+    }
+  };
+
+  EJS.endExt = function(path, match)
+  {
+    if(!path)
+      return null;
+    
+    match.lastIndex = 0;
+    if (!match.test(path))
+      path += this.ext;
+    return path;
+  }
+
+  /* @Static*/
+  EJS.Scanner = function(source, left, right)
+  {
+    extend(
+      this,
+      {
+        left_delimiter:   left + '%',
+        right_delimiter:  '%'  + right,
+        double_left:      left + '%%',
+        double_right:     '%%' + right,
+        left_equal:       left + '%=',
+        left_comment:     left + '%#'})
+
+    this.SplitRegexp = 
+        left == '['
+      ?
+        /(\[%%)|(%%\])|(\[%=)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/
+      : 
+        new RegExp
+          (
+            '('
+            + this.double_left
+            + ')|(%%'
+            + this.double_right
+            + ')|('
+            + this.left_equal
+            + ')|('
+            + this.left_comment
+            + ')|('
+            + this.left_delimiter
+            + ')|('
+            + this.right_delimiter
+            + '\n)|('
+            + this.right_delimiter
+            + ')|(\n)'
+          );
+
+    this.source = source;
+    this.stag = null;
+    this.lines = 0;
+  };
+
+  EJS.Scanner.to_text = function(input)
+  {
+    if(input == null || input === undefined)
+      return '';
+
+    if(input instanceof Date)
+      return input.toDateString();
+
+    if(input.toString) 
+      return input.toString();
+
+    return '';
+  };
+
+  EJS.Scanner.prototype =
+  {
+    scan: function(block)
+    {
+      scanline = this.scanline;
+      regex = this.SplitRegexp;
+     
+      if (!this.source == '')
+      {
+        var source_split = rsplit(this.source, /\n/);
+
+        for(var i = 0; i < source_split.length; i++)
+        {
+          var item = source_split[i];
+          this.scanline(item, regex, block);
+        }
+      }
+    },
+    scanline: function(line, regex, block)
+    {
+      this.lines++;
+      
+      var line_split = rsplit(line, regex);
+      
+      for(var i = 0; i < line_split.length; i++)
+      {
+        var token = line_split[i];
+        if (token == null)
+          continue;
+
+        try
+        {
+          block(token, this);
+        } catch(e)
+        {
+          throw {type: 'EJS.Scanner', line: this.lines};
+        }
+      }
     }
   };
 
@@ -285,53 +363,48 @@
   };
 
 
-  EJS.Compiler = function()
+  EJS.Compiler = function(source, left)
   {
-    this.construct.apply(this, arguments);
-  }
+    this.pre_cmd = ['var ___ViewO = []'];
+    this.post_cmd = new Array();
+    this.source = ' ';  
+
+    if (source != null)
+    {
+      if (typeof source == 'string')
+      {
+        source = source.replace(/\r\n/g, "\n");
+        source = source.replace(/\r/g,   "\n");
+        this.source = source;
+      }
+      else if (source.innerHTML)
+        this.source = source.innerHTML;
+      
+      if (typeof this.source != 'string')
+        this.source = "";
+    }
+
+    left = left || '<';
+    var right = '>';
+
+    switch(left)
+    {
+    case '[':
+      right = ']';
+      break;
+    case '<':
+      break;
+    default:
+      throw left + ' is not a supported deliminator';
+      break;
+    }
+
+    this.scanner = new EJS.Scanner(this.source, left, right);
+    this.out = '';
+  };
 
   EJS.Compiler.prototype =
   {
-    construct : function(source, left)
-    {
-      this.pre_cmd = ['var ___ViewO = [];'];
-      this.post_cmd = new Array();
-      this.source = ' ';  
-
-      if (source != null)
-      {
-        if (typeof source == 'string')
-        {
-          source = source.replace(/\r\n/g, "\n");
-          source = source.replace(/\r/g,   "\n");
-          this.source = source;
-        }
-        else if (source.innerHTML)
-          this.source = source.innerHTML;
-        
-        if (typeof this.source != 'string')
-          this.source = "";
-      }
-
-      left = left || '<';
-      var right = '>';
-
-      switch(left)
-      {
-      case '[':
-        right = ']';
-        break;
-      case '<':
-        break;
-      default:
-        throw left + ' is not a supported deliminator';
-        break;
-      }
-
-      this.scanner = new EJS.Scanner(this.source, left, right);
-      this.out = '';
-    }
-    ,
     compile: function(options, name)
     {
       options = options || {};
@@ -523,13 +596,28 @@
       }
     }
   };
-  
-  
-  /* Code below DEEP internal
-   * Do not waste your time.
-   * TODO: Refactor
-   */
 
+  //type, cache, folder
+  /**
+   * Sets default options for all views
+   * @param {Object} options Set view with the following options
+   * <table class="options">
+          <tbody><tr><th>Option</th><th>Default</th><th>Description</th></tr>
+          <tr>
+            <td>type</td>
+            <td>'<'</td>
+            <td>type of magic tags.  Options are '&lt;' or '['
+            </td>
+          </tr>
+          <tr>
+            <td>cache</td>
+            <td>true in production mode, false in other modes</td>
+            <td>true to cache template.
+            </td>
+          </tr>
+    </tbody></table>
+   * 
+   */
   EJS.config = function(options)
   {
     EJS.cache = options.cache != null ? options.cache : EJS.cache;
@@ -563,6 +651,66 @@
   };
 
   EJS.config( {cache: true, type: '<', ext: '.ejs' } );
+
+
+  /**
+   * @constructor
+   * By adding functions to EJS.Helpers.prototype, those functions will be available in the 
+   * views.
+   * @init Creates a view helper.  This function is called internally.  You should never call it.
+   * @param {Object} data The data passed to the view.  Helpers have access to it through this._data
+   */
+  EJS.Helpers = function(data, extras)
+  {
+    this._data = data;
+    this._extras = extras;
+    extend(this, extras );
+  };
+  /* @prototype*/
+  EJS.Helpers.prototype = 
+  {
+    /**
+     * Renders a new view.  If data is passed in, uses that to render the view.
+     * @param {Object} options standard options passed to a new view.
+     * @param {optional:Object} data
+     * @return {String}
+     */
+
+    view: function(options, data, helpers)
+    {
+      if(!helpers)
+        helpers = this._extras
+
+      if(!data)
+        data = this._data;
+
+      return new EJS(options).render(data, helpers);
+    },
+
+    /**
+     * For a given value, tries to create a human representation.
+     * @param {Object} input the value being converted.
+     * @param {Object} null_text what text should be present if input == null or undefined, defaults to ''
+     * @return {String} 
+     */
+    to_text: function(input, null_text)
+    {
+      if(input == null || input === undefined)
+        return null_text || '';
+      
+      if(input instanceof Date)
+        return input.toDateString();
+      
+      if(input.toString)
+        return 
+          input
+            .toString()
+            .replace(/\n/g, '<br />')
+            .replace(/''/g, "'");
+      
+      return '';
+    }
+  };
 
   EJS.newRequest = function()
   {
@@ -655,104 +803,6 @@
     request.send(null)
   }
   
-  /* @Static*/
-  EJS.Scanner = function(source, left, right)
-  {
-    extend(
-      this,
-      {
-        left_delimiter:   left + '%',
-        right_delimiter:  '%'  + right,
-        double_left:      left + '%%',
-        double_right:     '%%' + right,
-        left_equal:       left + '%=',
-        left_comment:     left + '%#'})
-
-    this.SplitRegexp = 
-        left == '['
-      ?
-        /(\[%%)|(%%\])|(\[%=)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/
-      : 
-        new RegExp
-          (
-            '('
-            + this.double_left
-            + ')|(%%'
-            + this.double_right
-            + ')|('
-            + this.left_equal
-            + ')|('
-            + this.left_comment
-            + ')|('
-            + this.left_delimiter
-            + ')|('
-            + this.right_delimiter
-            + '\n)|('
-            + this.right_delimiter
-            + ')|(\n)'
-          );
-
-    this.source = source;
-    this.stag = null;
-    this.lines = 0;
-  };
-
-  EJS.Scanner.to_text = function(input)
-  {
-    if(input == null || input === undefined)
-      return '';
-
-    if(input instanceof Date)
-      return input.toDateString();
-
-    if(input.toString) 
-      return input.toString();
-
-    return '';
-  };
-
-  EJS.Scanner.prototype =
-  {
-    scan: function(block)
-    {
-      scanline = this.scanline;
-      regex = this.SplitRegexp;
-     
-      if (!this.source == '')
-      {
-        var source_split = rsplit(this.source, /\n/);
-
-        for(var i = 0; i < source_split.length; i++)
-        {
-          var item = source_split[i];
-          this.scanline(item, regex, block);
-        }
-      }
-    },
-    scanline: function(line, regex, block)
-    {
-      this.lines++;
-      
-      var line_split = rsplit(line, regex);
-      
-      for(var i = 0; i < line_split.length; i++)
-      {
-        var token = line_split[i];
-        if (token == null)
-          continue;
-
-        try
-        {
-          block(token, this);
-        } catch(e)
-        {
-          throw {type: 'EJS.Scanner', line: this.lines};
-        }
-      }
-    }
-  };
-
-// Function utils
   var rsplit = function(string, regex)
   {
     var 
