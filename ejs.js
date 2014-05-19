@@ -4,163 +4,18 @@
   
   EJS = function( options )
   {
-    if (typeof options == "string")
-      options = {view: options};
-    
-    this.set_options(options);
-    if(options.precompiled)
-    {
-      this.template = {};
-      this.template.process = options.precompiled;
-      EJS.update(this.name, this);
-      return;
-    }
-    
-    if(options.element)
-    {
-      if(typeof options.element == 'string')
-      {
-        var name = options.element;
-        
-        options.element = document.getElementById(options.element)
-        if(options.element == null)
-          throw name+'does not exist!'
-      }
-
-      if(options.element.value)
-      {
-        this.text = options.element.value
-      }
-      else
-        this.text = options.element.innerHTML
-
-      this.name = options.element.id
-      this.type = '['
-    }
-    else if (options.url)
-    {
-      options.url = EJS.endExt(options.url, this.extMatch);
-      if (!this.name)
-        this.name = options.url;
-
-      var url = options.url
-      //options.view = options.absolute_url || options.view || options.;
-      var template = EJS.get(this.name /*url*/, this.cache);
-
-      if (template)
-        return template;
-      if (template == EJS.INVALID_PATH)
-        return null;
-      try
-      {
-        var tmpurl = url;
-        if (!this.cache)
-          tmpurl += '?' + Math.random();
-
-        this.text = EJS.request(tmpurl);
-      } catch(e) {}
-
-      if(this.text == null)
-      {
-        throw( {type: 'EJS', message: 'There is no template at ' + url} );
-      }
-      //this.name = url;
-    }
-
-    var template = new EJS.Compiler(this.text, this.type);
-
-    template.compile(options, this.name);
-    
-
-    EJS.update(this.name, this);
-    this.template = template;
+    this.construct.apply(this, arguments);
   };
 
   /* @Prototype*/
   EJS.prototype =
   {
-    _EJS_HOOK_first : function(result)
-    {
-      return result;
-    }
-    ,
-    /**
-     * Renders an object with extra view helpers attached to the view.
-     * @param {Object} object data to be rendered
-     * @param {Object} extra_helpers an object with additonal view helpers
-     * @return {String} returns the result of the string
-     */
     render : function(object, extra_helpers)
     {
       object = object || {};
-      this._extra_helpers = extra_helpers;
-      var v = new EJS.Helpers(object, extra_helpers || {});
-      var obj = this.template.process(object, v);
-      
-      obj.Defer = function(cb, time)
-      {
-        var that = this;
-        setTimeout(function()
-        {
-          cb.apply(that);
-        }, time);
-      };
-      
-      obj.first = function(safe)
-      {
-        if (safe)
-          return;
-        console.log(
-          "EJS.first()", 
-          "Ancor only in my mind. It not found in real world. Maybe i just fancy?", 
-          this._EJS_EXECUTE_FUNC);
-        // Maybe you trying access first element to early.
-        // Firstly all design rendering as text, and storing as string.
-        // Your javascript helping render it(probably you called ejs.first() from that timing)
-        // Secondly if client want to, rendered design attach to DOM page (and ejs.first() gets enabled)
-        // Try using setTimeout(..., 0) or phoxy.Defer(..., 0) to catch into
-      };
-      var ret = obj._EJS_EXECUTE_FUNC();
-      
-      function RandomNumb()
-      {
-        var ret = "EJS_ANCOR_";
-
-        for (var i = 0; i < 10; i++)
-          ret += '0' + Math.floor(Math.random() * 10);
-
-        return ret;
-      }
-
-      var ancor_id = RandomNumb();
-      var ancor =  "<div id=\"" + ancor_id + "\" ></div>";
-      obj._EJS_RELATED = {};
-
-      var hook = this._EJS_HOOK_first;
-      obj.first = function()
-      {
-        if (typeof(this._EJS_RELATED.first) != 'undefined')
-          return hook(this._EJS_RELATED.first);
-
-        var ancor = document.getElementById(ancor_id);
-        if (ancor == null)
-          return null;
-        var elem = ancor;
-        do
-        {
-          elem = elem.nextSibling;
-        } while (elem && elem.nodeType !== 1);
-        
-        this._EJS_RELATED.first = elem;
-        ancor.remove();
-        return this.first();
-      };
-      
-      obj.Defer(function()
-      {
-        this.first(true);
-      });
-      return ancor + ret;
+      //this._extra_helpers = extra_helpers;
+      //return this.template.process.call(object, object,v);
+      return this.template.process.call(object, object);
     }
     ,
     update : function(element, options)
@@ -194,6 +49,104 @@
         element.innerHTML = this.render(options)
     }
     ,
+    construct : function(options)
+    {
+      if (typeof options == "string")
+        options = {view: options};
+      
+      this.set_options(options);
+      if(options.precompiled)
+        return this.option_routes.precompiled(options);
+
+      if(options.element)
+        options = this.option_routes.element(options);
+      else if (options.url)
+        options = this.option_routes.url(options);
+
+      var template = new EJS.Compiler(this.text, this.type);
+
+      template.compile(options, this.name);
+
+      EJS.update(this.name, this);
+      this.template = template;
+    }
+    ,
+    option_routes :
+    {
+      precompiled : function(options)
+      {
+        this.template = {};
+        this.template.process = options.precompiled;
+        EJS.update(this.name, this);
+        return options;
+      }
+      ,
+      element : function()
+      {
+        if(typeof options.element == 'string')
+        {
+          var name = options.element;
+          
+          options.element = document.getElementById(options.element)
+          if(options.element == null)
+            throw name+'does not exist!'
+        }
+
+        if(options.element.value)
+        {
+          this.text = options.element.value
+        }
+        else
+          this.text = options.element.innerHTML
+
+        this.name = options.element.id
+        this.type = '['
+        
+        return options;
+      }
+      ,
+      url : function()
+      {
+        var endExt = function(path, match)
+        {
+          if(!path)
+            return null;
+
+          match.lastIndex = 0;
+          if (!match.test(path))
+            path += this.ext;
+          return path;
+        };
+
+        options.url = endExt(options.url, this.extMatch);
+        if (!this.name)
+          this.name = options.url;
+
+        var url = options.url
+        //options.view = options.absolute_url || options.view || options.;
+        var template = EJS.get(this.name /*url*/, this.cache);
+
+        if (template)
+          return template;
+        if (template == EJS.INVALID_PATH)
+          return null;
+        try
+        {
+          var tmpurl = url;
+          if (!this.cache)
+            tmpurl += '?' + Math.random();
+
+          this.text = EJS.request(tmpurl);
+        } catch(e) {}
+
+        if(this.text == null)
+        {
+          throw( {type: 'EJS', message: 'There is no template at ' + url} );
+        }
+        //this.name = url;
+      }
+    }
+    ,
     out : function()
     {
       return this.template.out;
@@ -214,7 +167,7 @@
       this.extMatch = new RegExp(this.ext.replace(/\./, '\.'));
     }
   };
-
+  
   EJS.endExt = function(path, match)
   {
     if(!path)
