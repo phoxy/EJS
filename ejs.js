@@ -11,6 +11,45 @@
   /* @Prototype*/
   EJS.prototype =
   {
+    render : function(object, extra_helpers)
+    {
+      object = object || {};
+      //this._extra_helpers = extra_helpers;
+      //return this.template.process.call(object, object,v);
+      return this.template.process.call(object, object);
+    }
+    ,
+    update : function(element, options)
+    {
+      if(typeof element == 'string')
+        element = document.getElementById(element);
+
+      if(options == null)
+      {
+        _template = this;
+        return function(object)
+        {
+          EJS.prototype.update.call(_template, element, object);
+        }
+      }
+
+      if(typeof options == 'string')
+      {
+        params = {};
+        params.url = options;
+        _template = this;
+        params.onComplete = function(request)
+        {
+          var object = eval(request.responseText)
+          EJS.prototype.update.call(_template, element, object)
+        }
+
+        EJS.ajax_request(params)
+      }
+      else
+        element.innerHTML = this.render(options)
+    }
+    ,
     construct : function(options)
     {
       if (typeof options == "string")
@@ -43,7 +82,7 @@
         return options;
       }
       ,
-      element : function(options)
+      element : function()
       {
         if(typeof options.element == 'string')
         {
@@ -67,7 +106,7 @@
         return options;
       }
       ,
-      url : function(options)
+      url : function()
       {
         var endExt = function(path, match)
         {
@@ -107,45 +146,6 @@
         }
         //this.name = url;
       }
-    }
-    ,
-    render : function(object, extra_helpers)
-    {
-      object = object || {};
-      //this._extra_helpers = extra_helpers;
-      //return this.template.process.call(object, object,v);
-      return this.template.process.call(object, object);
-    }
-    ,
-    update : function(element, options)
-    {
-      if(typeof element == 'string')
-        element = document.getElementById(element);
-
-      if(options == null)
-      {
-        _template = this;
-        return function(object)
-        {
-          EJS.prototype.update.call(_template, element, object);
-        }
-      }
-
-      if(typeof options == 'string')
-      {
-        params = {};
-        params.url = options;
-        _template = this;
-        params.onComplete = function(request)
-        {
-          var object = eval(request.responseText)
-          EJS.prototype.update.call(_template, element, object)
-        }
-
-        EJS.ajax_request(params)
-      }
-      else
-        element.innerHTML = this.render(options)
     }
     ,
     out : function()
