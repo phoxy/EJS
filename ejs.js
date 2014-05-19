@@ -18,14 +18,32 @@
       
       this.set_options(options);
       if(options.precompiled)
+        return this.option_routes.precompiled(options);
+
+      if(options.element)
+        options = this.option_routes.element(options);
+      else if (options.url)
+        options = this.option_routes.url(options);
+
+      var template = new EJS.Compiler(this.text, this.type);
+
+      template.compile(options, this.name);
+
+      EJS.update(this.name, this);
+      this.template = template;
+    }
+    ,
+    option_routes :
+    {
+      precompiled : function(options)
       {
         this.template = {};
         this.template.process = options.precompiled;
         EJS.update(this.name, this);
-        return;
+        return options;
       }
-      
-      if(options.element)
+      ,
+      element : function(options)
       {
         if(typeof options.element == 'string')
         {
@@ -45,8 +63,11 @@
 
         this.name = options.element.id
         this.type = '['
+        
+        return options;
       }
-      else if (options.url)
+      ,
+      url : function(options)
       {
         var endExt = function(path, match)
         {
@@ -86,13 +107,6 @@
         }
         //this.name = url;
       }
-
-      var template = new EJS.Compiler(this.text, this.type);
-
-      template.compile(options, this.name);
-
-      EJS.update(this.name, this);
-      this.template = template;
     }
     ,
     render : function(object, extra_helpers)
