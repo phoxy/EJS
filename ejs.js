@@ -97,59 +97,15 @@
     {
       if (typeof options == "string")
         options = {view: options};
-      
       this.set_options(options);
-      if(options.precompiled)
-        return this.option_routes.precompiled.call(this, options);
 
-      if(options.element)
-        options = this.option_routes.element.call(this, options);
-      else if (options.url)
-        options = this.option_routes.url.call(this, options);
-
-      var template = new EJS.Compiler(this.text, this.type);
-
-      template.compile(options, this.name);
-
-      EJS.update(this.name, this);
-      this.template = template;
-    }
-    ,
-    option_routes :
-    {
-      precompiled : function(options)
+      if (options.precompiled)
       {
-        this.template = {};
-        this.template.process = options.precompiled;
-        EJS.update(this.name, this);
-        return options;
+        this.template = {process: options.precompiled};
+        return EJS.update(this.name, this);
       }
-      ,
-      element : function(options)
-      {
-        if(typeof options.element == 'string')
-        {
-          var name = options.element;
-          
-          options.element = document.getElementById(options.element)
-          if(options.element == null)
-            throw name+'does not exist!'
-        }
-
-        if(options.element.value)
-        {
-          this.text = options.element.value
-        }
-        else
-          this.text = options.element.innerHTML
-
-        this.name = options.element.id
-        this.type = '['
-        
-        return options;
-      }
-      ,
-      url : function(options)
+      
+      if (options.url)
       {
         var endExt = function(path, match)
         {
@@ -163,32 +119,45 @@
         };
 
         options.url = endExt(options.url, this.extMatch);
-        if (!this.name)
-          this.name = options.url;
+        this.name = this.name || options.url;
 
-        var url = options.url
-        //options.view = options.absolute_url || options.view || options.;
-        var template = EJS.get(this.name /*url*/, this.cache);
-
-        if (template)
-          return template;
+        template = EJS.get(this.name, this.cache);
+        
         if (template == EJS.INVALID_PATH)
           return null;
+        
+        if (template)
+          return this.template = template;
+          
         try
         {
-          var tmpurl = url;
-          if (!this.cache)
-            tmpurl += '?' + Math.random();
-
-          this.text = EJS.request(tmpurl);
-        } catch(e) {}
-
-        if(this.text == null)
+          addon = !this.cache ? ('?' + Math.random()) : '';
+          if ((this.text = EJS.request(options.url + addon)) == null)
+            throw null;
+        } catch(e)
         {
-          throw( {type: 'EJS', message: 'There is no template at ' + url} );
+          throw( {type: 'EJS', message: 'There is no template at ' + options.url} );
         }
-        //this.name = url;
       }
+      else
+      if (options.element)
+      {
+        var element = options.element;
+        if (typeof element == 'string')
+          if((element = document.getElementById(element)) == null)
+            throw options.element + 'does not exist!';
+
+        this.text = element.value || element.innerHTML;
+        this.name = element.id;
+        this.type = '[';
+        options.element = element;
+      }
+
+      var template = new EJS.Compiler(this.text, this.type);
+
+      template.compile(options, this.name);
+      EJS.update(this.name, template);
+      this.template = template;
     }
     ,
     out : function()
