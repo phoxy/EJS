@@ -53,6 +53,7 @@
       {
         this.first(true);
       });
+
       return ancor + ret;
     }
     ,
@@ -94,12 +95,12 @@
       
       this.set_options(options);
       if(options.precompiled)
-        return this.option_routes.precompiled(options);
+        return this.option_routes.precompiled.call(this, options);
 
       if(options.element)
-        options = this.option_routes.element(options);
+        options = this.option_routes.element.call(this, options);
       else if (options.url)
-        options = this.option_routes.url(options);
+        options = this.option_routes.url.call(this, options);
 
       var template = new EJS.Compiler(this.text, this.type);
 
@@ -119,7 +120,7 @@
         return options;
       }
       ,
-      element : function()
+      element : function(options)
       {
         if(typeof options.element == 'string')
         {
@@ -143,7 +144,7 @@
         return options;
       }
       ,
-      url : function()
+      url : function(options)
       {
         var endExt = function(path, match)
         {
