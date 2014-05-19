@@ -223,6 +223,12 @@
     for (var k in obj)
       if (obj.hasOwnProperty(k))
         this.across[k] = obj[k];
+
+    var that = this;
+    this.across.escape = function()
+    {
+      return that;
+    };
   };
   
   EJS.Canvas.prototype =
