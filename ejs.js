@@ -10,7 +10,7 @@
   /* @Prototype*/
   EJS.prototype =
   {
-    render : function(object)
+    render : function(object, return_canvas)
     {
       var obj = this.template.process(object);
       var ret = obj._EJS_EXECUTE_FUNC.call(obj.across);
@@ -54,7 +54,12 @@
         this.first(true);
       });
 
-      return ancor + ret;
+      obj.RenderCompleted.call(obj, ancor_id);
+
+      obj.html = ancor + ret;
+      if (return_canvas)
+        return obj;
+      return obj.html;
     }
     ,
     update : function(element, options)
@@ -220,11 +225,13 @@
   
   EJS.Canvas = function(obj)
   {
+    this.across = new EJS.Canvas.across;
     for (var k in obj)
       if (obj.hasOwnProperty(k))
         this.across[k] = obj[k];
 
     var that = this;
+
     this.across.escape = function()
     {
       return that;
@@ -233,38 +240,49 @@
   
   EJS.Canvas.prototype =
   {
-    across :
-    {
-      Defer : function(cb, time)
-      {
-        var that = this;
-        setTimeout(function()
-        {
-          cb.apply(that);
-        }, time);
-      }
-      ,
-      first : function(safe)
-      {
-        if (safe)
-          return;
-        console.log(
-          "EJS.Canvas",
-          "EJS.Canvas.first() called to early. Use EJS.Canvas.Defer, or any other delay method",
-          this._EJS_EXECUTE_FUNC);
-
-        // Maybe you trying access first element to early.
-        // Firstly all design rendering as text, and storing as string.
-        // Your javascript helping render it(probably you called ejs.first() from that timing)
-        // Secondly if client want to, rendered design attach to DOM page (and ejs.first() gets enabled)
-        // Try using setTimeout(..., 0) or phoxy.Defer(..., 0) to catch into
-      }
-    }
-    ,
     hook_first : function(element)
     {
       return element;
     }
+    ,
+    RenderCompleted : function(ancor_id)
+    {
+      // You could overload this method and hook moment between EJS render and first this.Defer
+    }
+    ,
+    html : undefined // Here will be rendered html
+    ,
+  };
+  
+  EJS.Canvas.across = function() {}
+  
+  EJS.Canvas.across.prototype =
+  {
+    Defer : function(cb, time)
+    {
+      var that = this;
+      setTimeout(function()
+      {
+        cb.apply(that);
+      }, time);
+    }
+    ,
+    first : function(safe)
+    {
+      if (safe)
+        return;
+      console.log(
+        "EJS.Canvas",
+        "EJS.Canvas.first() called to early. Use EJS.Canvas.Defer, or any other delay method",
+        this._EJS_EXECUTE_FUNC);
+
+      // Maybe you trying access first element to early.
+      // Firstly all design rendering as text, and storing as string.
+      // Your javascript helping render it(probably you called ejs.first() from that timing)
+      // Secondly if client want to, rendered design attach to DOM page (and ejs.first() gets enabled)
+      // Try using setTimeout(..., 0) or phoxy.Defer(..., 0) to catch into
+    }
+    ,
   };
 
   /* Code below DEEP internal
