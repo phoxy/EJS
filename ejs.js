@@ -48,7 +48,18 @@
       }
       else if (options.url)
       {
-        options.url = EJS.endExt(options.url, this.extMatch);
+        var endExt = function(path, match)
+        {
+          if(!path)
+            return null;
+
+          match.lastIndex = 0;
+          if (!match.test(path))
+            path += this.ext;
+          return path;
+        };
+
+        options.url = endExt(options.url, this.extMatch);
         if (!this.name)
           this.name = options.url;
 
@@ -149,17 +160,6 @@
       this.extMatch = new RegExp(this.ext.replace(/\./, '\.'));
     }
   };
-
-  EJS.endExt = function(path, match)
-  {
-    if(!path)
-      return null;
-    
-    match.lastIndex = 0;
-    if (!match.test(path))
-      path += this.ext;
-    return path;
-  }
 
   /* @Static*/
   EJS.Scanner = function(source, left, right)
