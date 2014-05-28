@@ -199,7 +199,6 @@
     
     function clone(obj)
     {
-      debugger;
       if (obj === null)
         return obj;
       if (typeof obj != "object")
