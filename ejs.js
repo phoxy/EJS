@@ -196,9 +196,26 @@
   EJS.Canvas = function(obj)
   {
     this.across = new EJS.Canvas.across;
+    
+    function clone(obj)
+    {
+      debugger;
+      if (obj === null)
+        return obj;
+      if (typeof obj != "object")
+        return obj;
+
+      var copy = obj.constructor();
+      for (var attr in obj)
+        if (obj.hasOwnProperty(attr))
+          copy[attr] = clone(obj[attr]);
+      return copy;
+    }
+    
+    
     for (var k in obj)
       if (obj.hasOwnProperty(k))
-        this.across[k] = obj[k];
+        this.across[k] = clone(obj[k]);
 
     var that = this;
 
