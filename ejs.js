@@ -13,6 +13,7 @@
     render : function(object, return_canvas)
     {
       var obj = this.template.process(object);
+      obj.name = this.name;
       var ret = obj._EJS_EXECUTE_FUNC.call(obj.across);
 
       function RandomNumb()
