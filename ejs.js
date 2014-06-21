@@ -192,13 +192,29 @@
       path += this.ext;
     return path;
   }
+
+  EJS.IsolateContext = function (obj)
+  {
+    if (obj === null)
+      return obj;
+    if (typeof obj != "object")
+      return obj;
+
+    var copy = obj.constructor();
+    for (var attr in obj)
+      if (obj.hasOwnProperty(attr))
+        copy[attr] = EJS.IsolateContext(obj[attr]);
+    return copy;
+  }
+
   
   EJS.Canvas = function(obj)
   {
     this.across = new EJS.Canvas.across;
+    
     for (var k in obj)
       if (obj.hasOwnProperty(k))
-        this.across[k] = obj[k];
+        this.across[k] = EJS.IsolateContext(obj[k]);
 
     var that = this;
 
@@ -222,6 +238,22 @@
     ,
     html : undefined // Here will be rendered html
     ,
+    DrawTo : function(new_canvas)
+    {
+      var old = this.__canvas;
+      this.__canvas = new_canvas || [];
+      return old;
+    }
+    ,
+    Append : function(str)
+    {
+      return this.__canvas.push(str);
+    }
+    ,
+    Render : function(str)
+    {
+      return this.__canvas.join('');; 
+    }
   };
   
   EJS.Canvas.across = function() {}
@@ -269,7 +301,7 @@
   {
     construct: function(source, left)
     {
-      this.pre_cmd = ['var ___ViewO = []'];
+      this.pre_cmd = ['this.escape().DrawTo([])'];
       this.post_cmd = new Array();
       this.source = ' ';  
 
@@ -311,7 +343,7 @@
     {
       options = options || {};
       this.out = '';
-      var put_cmd = "___ViewO.push(";
+      var put_cmd = "this.escape().Append(";
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);    
       var content = '';
@@ -404,7 +436,7 @@
     {
       var __context = this;
       // HERE WILL BE CODE COMPILED FROM EJS
-      return ___ViewO.join("");
+      return this.escape().__canvas.join("");
     };
 
     this.process = function(_CONTEXT)
@@ -431,7 +463,7 @@
       // HERE WILL BE CODE COMPILED FROM EJS
     + this.out
     + '\n\
-      return ___ViewO.join("");\n\
+      return this.escape().Render();\n\
     };\n\
 \n\
     this.process = function(_CONTEXT)\n\
