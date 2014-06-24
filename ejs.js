@@ -27,7 +27,7 @@
       }
 
       var ancor_id = RandomNumb();
-      var ancor =  "<div id=\"" + ancor_id + "\" ></div>";
+      var ancor =  "<div id=\"" + ancor_id + "\" class='ejs_ancor'></div>";
 
       var hook = obj.hook_first;
 
