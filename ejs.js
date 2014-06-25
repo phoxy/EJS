@@ -269,9 +269,15 @@
       }, time);
     }
     ,
-    first : function(safe)
+    first : function(cb)
     {
-      if (safe)
+      if (typeof cb == 'function')
+        return this.Defer(function()
+          {
+            cb.apply(this.first());
+          });
+
+      if (cb)
         return;
       console.log(
         "EJS.Canvas",
