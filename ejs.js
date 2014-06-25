@@ -291,6 +291,15 @@
       // Try using setTimeout(..., 0) or phoxy.Defer(..., 0) to catch into
     }
     ,
+    XSSEscape : function(str)
+      {
+        return str
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+      }
   };
 
   /* Code below DEEP internal
