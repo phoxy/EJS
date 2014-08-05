@@ -201,10 +201,15 @@
       return obj;
 
     var copy = obj.constructor();
+    return EJS.IsolateContext.Directly(obj, copy);
+  }
+
+  EJS.IsolateContext.Directly = function(obj, into)
+  {
     for (var attr in obj)
       if (obj.hasOwnProperty(attr))
-        copy[attr] = EJS.IsolateContext(obj[attr]);
-    return copy;
+        into[attr] = EJS.IsolateContext(obj[attr]);
+    return into;
   }
 
   
