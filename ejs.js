@@ -46,7 +46,7 @@
         } while (elem && elem.nodeType !== 1);
         
         obj.first = elem;
-        ancor.remove();
+        ancor.parentNode.removeChild(ancor);
         return this.first();
       };
 
