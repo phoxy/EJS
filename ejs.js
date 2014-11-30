@@ -391,6 +391,7 @@
           case scanner.left_delimiter:
           case scanner.left_equal:
           case scanner.left_comment:
+          case scanner.left_at:
             scanner.stag = token;
             if (content.length > 0)
               buff.push(put_cmd + '"' + clean(content) + '")');
@@ -422,6 +423,9 @@
               {
                 buff.push(content);
               }
+              break;
+            case scanner.left_at:
+              buff.push("\n" + insert_cmd + "(this.XSSEscape(EJS.Scanner.to_text(" + content + "))))");
               break;
             case scanner.left_equal:
               buff.push("\n" + insert_cmd + "(EJS.Scanner.to_text(" + content + ")))");
@@ -644,12 +648,13 @@
         double_left:      left + '%%',
         double_right:     '%%' + right,
         left_equal:       left + '%=',
+        left_at:          left + '%@',
         left_comment:     left + '%#'})
 
     this.SplitRegexp = 
         left == '['
-      ?
-        /(\[%%)|(%%\])|(\[%=)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/
+      ? // what the hack
+        /(\[%%)|(%%\])|(\[%=)|(\[%@)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/
       : 
         new RegExp
           (
@@ -659,6 +664,8 @@
             + this.double_right
             + ')|('
             + this.left_equal
+            + ')|('
+            + this.left_at
             + ')|('
             + this.left_comment
             + ')|('
