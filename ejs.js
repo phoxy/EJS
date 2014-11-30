@@ -10,11 +10,22 @@
   /* @Prototype*/
   EJS.prototype =
   {
-    render : function(object, return_canvas)
+    prepare : function(object, return_canvas)
     {
       var obj = this.template.process(object);
       obj.name = this.name;
+
+      obj.across.Defer(function()
+      {
+        this.first(true);
+      });
+      return obj;
+    }
+    ,
+    execute : function(obj)
+    {
       var ret = obj._EJS_EXECUTE_FUNC.call(obj.across);
+      obj.RenderCompleted.call(obj, ancor_id);
 
       function RandomNumb()
       {
@@ -50,14 +61,15 @@
         return this.first();
       };
 
-      obj.across.Defer(function()
-      {
-        this.first(true);
-      });
-
-      obj.RenderCompleted.call(obj, ancor_id);
-
       obj.html = ancor + ret;
+      return ret;
+    }
+    ,
+    render : function(object, return_canvas)
+    {
+      var obj = this.prepare(object);
+      this.execute(obj);
+
       if (return_canvas)
         return obj;
       return obj.html;
