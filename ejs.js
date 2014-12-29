@@ -552,7 +552,7 @@
               continue;
           }
 
-          error.line++;
+          error.line--;
 
           var e = new Error();
 
