@@ -517,38 +517,54 @@
       {
         eval(to_be_evaled);
       }
-        catch(e)
+      catch(e)
       {
-        if(typeof JSLINT == 'undefined')
+        if (typeof JSHINT !== 'undefined')
+          VALIDATE = JSHINT;
+        else if (typeof JSLINT !== 'undefined')
+          VALIDATE = JSLINT;
+        else
         {
-          console.log("We strongly recomend you include JSLINT", "https://github.com/douglascrockford/JSLint");
-          throw e;
+          console.log("Error: We detected fatal errors, but cant locate them. Import JSLINT");
+          console.log("Error: Somewhere in the " + name + " we found " + e);
+          console.log("Error: We strongly recomend you include JSHINT", "http://jshint.com/install/");
+          throw "EJS Execution failed";
         }
 
-        JSLINT(this.out);
+        VALIDATE(this.out);
         var first_e = null;
+        var i = 0;
 
-        for (var i = 0; i < JSLINT.errors.length; i++)
+        console.log("Begin " + name + " error report ====");
+        while (VALIDATE.errors[i] != null)
         {
-          var error = JSLINT.errors[i];
-          if(error.reason != "Unnecessary semicolon.")
-          {
-            error.line++;
+          var error = VALIDATE.errors[i++];
 
-            var e = new Error();
-
-            e.lineNumber = error.line;
-            e.message = error.reason;
-
-            if(options.view)
-              e.fileName = options.view;
-
-            if (first_e === null)
-              first_e = e;
-
-            console.log("Detected JSError: ", error, e);
+          switch (error.raw)
+          { // Ignore strict level warnings
+            case undefined:
+            case "Expected '{a}' at column {b}, not column {c}.":
+            case "Move 'var' declarations to the top of the function.":
+            case "Unexpected space between '{a}' and '{b}'.":
+            case "Unnecessary semicolon.":
+            case "Missing semicolon.":
+            case "Forgotten 'debugger' statement?":
+              continue;
           }
+
+          error.line++;
+
+          var e = new Error();
+
+          if (options.view)
+            e.fileName = options.view;
+
+          if (first_e === null)
+            first_e = error;
+
+          console.log([error], "Error: " + error.reason, {lineNumber: error.line});
         }
+        console.log("End " + name + " error report ====");
 
         throw first_e;
       }
