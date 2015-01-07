@@ -224,14 +224,16 @@
     return into;
   }
 
-  
+
+  EJS.IsolateNames = ["first", "escape"];  
   EJS.Canvas = function(obj)
   {
     this.across = new EJS.Canvas.across;
     
     for (var k in obj)
       if (obj.hasOwnProperty(k))
-        this.across[k] = EJS.IsolateContext(obj[k]);
+        if ($.inArray(k, EJS.IsolateNames) == -1)
+          this.across[k] = EJS.IsolateContext(obj[k]);
 
     var that = this;
 
