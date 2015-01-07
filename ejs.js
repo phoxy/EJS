@@ -205,22 +205,26 @@
     return path;
   }
 
-  EJS.IsolateContext = function (obj)
+  EJS.IsolateContext = function (obj, depth)
   {
     if (obj === null)
       return obj;
     if (typeof obj != "object")
       return obj;
+    if (depth !== undefined)
+      if (depth-- <= 1)
+        return obj;
+
 
     var copy = obj.constructor();
-    return EJS.IsolateContext.Directly(obj, copy);
+    return EJS.IsolateContext.Directly(obj, copy, depth);
   }
 
-  EJS.IsolateContext.Directly = function(obj, into)
+  EJS.IsolateContext.Directly = function(obj, into, depth)
   {
     for (var attr in obj)
       if (obj.hasOwnProperty(attr))
-        into[attr] = EJS.IsolateContext(obj[attr]);
+        into[attr] = EJS.IsolateContext(obj[attr], depth);
     return into;
   }
 
@@ -233,7 +237,7 @@
     for (var k in obj)
       if (obj.hasOwnProperty(k))
         if ($.inArray(k, EJS.IsolateNames) == -1)
-          this.across[k] = EJS.IsolateContext(obj[k]);
+          this.across[k] = EJS.IsolateContext(obj[k], 1);
 
     var that = this;
 
