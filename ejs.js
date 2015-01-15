@@ -24,7 +24,8 @@
     ,
     execute : function(obj)
     {
-      var ret = obj._EJS_EXECUTE_FUNC.call(obj.across);
+      obj._EJS_EXECUTE_FUNC.call(obj.across);
+      var ret = obj.Render();
       obj.RenderCompleted.call(obj, ancor_id);
 
       function RandomNumb()
@@ -478,7 +479,6 @@
     {
       var __context = this;
       // HERE WILL BE CODE COMPILED FROM EJS
-      return this.escape().__canvas.join("");
     };
 
     this.process = function(_CONTEXT)
@@ -505,7 +505,6 @@
       // HERE WILL BE CODE COMPILED FROM EJS
     + this.out
     + '\n\
-      return this.escape().Render();\n\
     };\n\
 \n\
     this.process = function(_CONTEXT)\n\
