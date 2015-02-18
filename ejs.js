@@ -237,7 +237,7 @@
     
     for (var k in obj)
       if (obj.hasOwnProperty(k))
-        if ($.inArray(k, EJS.IsolateNames) == -1)
+        if (EJS.IsolateNames.indexOf(k) == -1)
           this.across[k] = EJS.IsolateContext(obj[k], 1);
 
     var that = this;
