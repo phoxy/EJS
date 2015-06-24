@@ -1,4 +1,6 @@
 {
-  "name": "phoxy/ENJS",
-  "version": "v2.1.0"
+  "name": "phoxy/enjs",
+  "description": "Uncompatible EJS fork",
+  "version": "v2.1.0",
+  "license": "MIT"
 }
