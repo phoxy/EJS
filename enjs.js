@@ -340,7 +340,7 @@
   {
     construct: function(source, left)
     {
-      this.pre_cmd = ['this.escape().DrawTo([])'];
+      this.pre_cmd = ['__context.escape().DrawTo([])'];
       this.post_cmd = new Array();
       this.source = ' ';  
 
@@ -382,7 +382,7 @@
     {
       options = options || {};
       this.out = '';
-      var put_cmd = "this.escape().Append(";
+      var put_cmd = "__context.escape().Append(";
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);    
       var content = '';
@@ -444,7 +444,7 @@
               }
               break;
             case scanner.left_at:
-              buff.push("\n" + insert_cmd + "(this.XSSEscape(EJS.Scanner.to_text(" + content + "))))");
+              buff.push("\n" + insert_cmd + "(__context.XSSEscape(EJS.Scanner.to_text(" + content + "))))");
               break;
             case scanner.left_equal:
               buff.push("\n" + insert_cmd + "(EJS.Scanner.to_text(" + content + ")))");
