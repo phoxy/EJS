@@ -389,6 +389,38 @@
     compile: function(options, name)
     {
       options = options || {};
+
+      this.tokenize(options);
+      /*
+        (function()
+        {
+          var __context = this;
+          // HERE WILL BE CODE COMPILED FROM EJS
+        })
+      */
+
+      var to_be_evaled =
+        '//' + name + '\n\
+        (function()\n\
+        {\n\
+          var __context = this;\n'
+          // HERE WILL BE CODE COMPILED FROM EJS
+          + this.out
+          + '\n\
+        })\n';
+
+      try
+      {
+        this.ejs_functor = eval(to_be_evaled);
+      }
+      catch(e)
+      {
+        this.report_error(e, arguments, this.out);
+      }
+    }
+    ,
+    tokenize: function(options)
+    {
       this.out = '';
       var put_cmd = "__context.escape().Append(";
       var insert_cmd = put_cmd;
@@ -480,33 +512,6 @@
 
       buff.close();
       this.out = buff.script + ";";
-
-      /*
-        (function()
-        {
-          var __context = this;
-          // HERE WILL BE CODE COMPILED FROM EJS
-        })
-      */
-
-      var to_be_evaled = 
-        '//' + name + '\n\
-        (function()\n\
-        {\n\
-          var __context = this;\n'
-          // HERE WILL BE CODE COMPILED FROM EJS
-          + this.out
-          + '\n\
-        })\n';
-      
-      try
-      {
-        this.ejs_functor = eval(to_be_evaled);
-      }
-      catch(e)
-      {
-        this.report_error(e, arguments, this.out);
-      }
     }
     ,
     report_error : function(e, args, code)
