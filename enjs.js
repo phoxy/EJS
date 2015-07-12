@@ -505,55 +505,60 @@
       }
       catch(e)
       {
-        if (typeof JSHINT !== 'undefined')
-          VALIDATE = JSHINT;
-        else if (typeof JSLINT !== 'undefined')
-          VALIDATE = JSLINT;
-        else
-        {
-          console.log("Error: We detected fatal errors, but cant locate them. Import JSLINT");
-          console.log("Error: Somewhere in the " + name + " we found " + e);
-          console.log("Error: We strongly recomend you include JSHINT", "http://jshint.com/install/");
-          throw "EJS Execution failed";
-        }
-
-        VALIDATE(this.out);
-        var first_e = null;
-        var i = 0;
-
-        console.log("Begin " + name + " error report ====");
-        while (VALIDATE.errors[i] != null)
-        {
-          var error = VALIDATE.errors[i++];
-
-          switch (error.raw)
-          { // Ignore strict level warnings
-            case undefined:
-            case "Expected '{a}' at column {b}, not column {c}.":
-            case "Move 'var' declarations to the top of the function.":
-            case "Unexpected space between '{a}' and '{b}'.":
-            case "Unnecessary semicolon.":
-            case "Missing semicolon.":
-            case "Forgotten 'debugger' statement?":
-              continue;
-          }
-
-          error.line--;
-
-          var e = new Error();
-
-          if (options.view)
-            e.fileName = options.view;
-
-          if (first_e === null)
-            first_e = error;
-
-          console.log([error], "Error: " + error.reason, {lineNumber: error.line});
-        }
-        console.log("End " + name + " error report ====");
-
-        throw first_e;
+        this.report_error(e, arguments, this.out);
       }
+    }
+    ,
+    report_error : function(e, args, code)
+    {
+      if (typeof JSHINT !== 'undefined')
+        VALIDATE = JSHINT;
+      else if (typeof JSLINT !== 'undefined')
+        VALIDATE = JSLINT;
+      else
+      {
+        console.log("Error: We detected fatal errors, but cant locate them. Import JSLINT");
+        console.log("Error: Somewhere in the " + args.name + " we found " + e);
+        console.log("Error: We strongly recomend you include JSHINT", "http://jshint.com/install/");
+        throw "EJS Execution failed";
+      }
+
+      VALIDATE(code);
+      var first_e = null;
+      var i = 0;
+
+      console.log("Begin " + args.name + " error report ====");
+      while (VALIDATE.errors[i] != null)
+      {
+        var error = VALIDATE.errors[i++];
+
+        switch (error.raw)
+        { // Ignore strict level warnings
+          case undefined:
+          case "Expected '{a}' at column {b}, not column {c}.":
+          case "Move 'var' declarations to the top of the function.":
+          case "Unexpected space between '{a}' and '{b}'.":
+          case "Unnecessary semicolon.":
+          case "Missing semicolon.":
+          case "Forgotten 'debugger' statement?":
+            continue;
+        }
+
+        error.line--;
+
+        var e = new Error();
+
+        if (args.options.view)
+          e.fileName = args.options.view;
+
+        if (first_e === null)
+          first_e = error;
+
+        console.log([error], "Error: " + error.reason, {lineNumber: error.line});
+      }
+      console.log("End " + args.name + " error report ====");
+
+      throw first_e;
     }
   };
    
