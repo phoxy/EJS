@@ -324,6 +324,15 @@
                  .replace(/"/g, "&quot;")
                  .replace(/'/g, "&#039;");
       }
+    ,
+    GetAppendMethod : function()
+    {
+      var that = this.escape();
+      return function()
+      {
+        return that.Append.apply(that, arguments);
+      };
+    }
   };
 
   /* Code below DEEP internal
@@ -395,6 +404,7 @@
         (function()
         {
           var __context = this;
+          var __append = this.GetAppendMethod();
           // HERE WILL BE CODE COMPILED FROM EJS
         })
       */
@@ -403,7 +413,8 @@
         '//' + name + '\n\
         (function()\n\
         {\n\
-          var __context = this;\n'
+          var __context = this;\n\
+          var __append = this.GetAppendMethod();\n'
           // HERE WILL BE CODE COMPILED FROM EJS
           + this.out
           + '\n\
@@ -422,7 +433,7 @@
     tokenize: function(options)
     {
       this.out = '';
-      var put_cmd = "__context.escape().Append(";
+      var put_cmd = "__append(";
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);    
       var content = '';
