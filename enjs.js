@@ -378,6 +378,14 @@
       this.out = '';
     }
     ,
+    process: function(_CONTEXT)
+    {
+      var ret = new EJS.Canvas(_CONTEXT);
+
+      ret._EJS_EXECUTE_FUNC = this.ejs_functor;
+      return ret;
+    }
+    ,
     compile: function(options, name)
     {
       options = options || {};
@@ -472,55 +480,28 @@
 
       buff.close();
       this.out = buff.script + ";";
-/*
-  this.process = function(_CONTEXT)
-  {
-    this.ejs_functor = function()
-    {
-      var __context = this;
-      // HERE WILL BE CODE COMPILED FROM EJS
-    };
 
-    this.process = function(_CONTEXT)
-    {
-      var ret = new EJS.Canvas(_CONTEXT);
+      /*
+        (function()
+        {
+          var __context = this;
+          // HERE WILL BE CODE COMPILED FROM EJS
+        })
+      */
 
-      ret._EJS_EXECUTE_FUNC = this.ejs_functor;
-      return ret;
-    }
-
-    return this.process(_CONTEXT);
-  }; 
-  */
       var to_be_evaled = 
-       '/*'
-       + name
-       + '*/\n'
-       + '\n\
-  this.process = function(_CONTEXT)\n\
-  {\n\
-    this.ejs_functor = function()\n\
-    {\n\
-      var __context = this;\n'
-      // HERE WILL BE CODE COMPILED FROM EJS
-    + this.out
-    + '\n\
-    };\n\
-\n\
-    this.process = function(_CONTEXT)\n\
-    {\n\
-      var ret = new EJS.Canvas(_CONTEXT);\n\
-\n\
-      ret._EJS_EXECUTE_FUNC = this.ejs_functor;\n\
-      return ret;\n\
-    };\n\
-\n\
-    return this.process(_CONTEXT);\n\
-  };\n';
+        '//' + name + '\n\
+        (function()\n\
+        {\n\
+          var __context = this;\n'
+          // HERE WILL BE CODE COMPILED FROM EJS
+          + this.out
+          + '\n\
+        })\n';
       
       try
       {
-        eval(to_be_evaled);
+        this.ejs_functor = eval(to_be_evaled);
       }
       catch(e)
       {
