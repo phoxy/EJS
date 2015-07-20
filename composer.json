@@ -1,0 +1,44 @@
+{
+  "name": "phoxy/enjs",
+  "description": "HTML template engine for JS. Uncompatible fork from EJS",
+  "type": "library",
+  "license": "MIT",
+  "minimum-stability": "dev",
+  "suggest" :
+  {
+    "jshint/jshint": "Gives your better understanding on VM compilation errors"
+  },
+  "repositories":
+  [
+    {
+      "type": "vcs",
+      "url": "https://github.com/jshint/jshint"
+    }
+  ],
+  "authors":
+  [
+    {
+      "name": "Edward Benson",
+      "email": "edward.benson@gmail.com",
+      "homepage": "http://www.embeddedjs.com/",
+      "role": "Creator"
+    },
+    {
+      "name": "Justin B Meyer",
+      "email": "JustinBMeyer@gmail.com",
+      "homepage": "https://github.com/justinbmeyer",
+      "role": "Commiter"
+    },
+    {
+      "name": "Brian Unknown",
+      "homepage": "https://code.google.com/u/103437137528296311954/",
+      "role": "Commiter"
+    },
+    {
+      "name": "Kirill Berezin",
+      "homepage": "https://github.com/phoxy/ENJS",
+      "email": "enelar@exsul.net",
+      "role": "Improver, fork owner"
+    }
+  ]
+}
