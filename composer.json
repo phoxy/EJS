@@ -4,6 +4,7 @@
   "type": "library",
   "license": "MIT",
   "minimum-stability": "dev",
+  "include-path": ["/"],
   "suggest" :
   {
     "jshint/jshint": "Gives your better understanding on VM compilation errors"
