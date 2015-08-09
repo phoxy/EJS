@@ -404,6 +404,7 @@
         (function()
         {
           var __context = this;
+          var __this = this;
           var __append = this.GetAppendMethod();
           // HERE WILL BE CODE COMPILED FROM EJS
         })
@@ -414,6 +415,7 @@
         (function()\n\
         {\n\
           var __context = this;\n\
+          var __this = this;\n\
           var __append = this.GetAppendMethod();\n'
           // HERE WILL BE CODE COMPILED FROM EJS
           + this.out
