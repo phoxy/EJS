@@ -1,7 +1,7 @@
 (function()
 {
   var rsplit, chop, extend;
-  
+
   EJS = function( options )
   {
     this.construct.apply(this, arguments);
@@ -56,7 +56,7 @@
         {
           elem = elem.nextSibling;
         } while (elem && elem.nodeType !== 1);
-        
+
         obj.first = elem;
         ancor.parentNode.removeChild(ancor);
         return this.first();
@@ -118,7 +118,7 @@
         this.template = {process: options.precompiled};
         return EJS.update(this.name, this);
       }
-      
+
       if (options.url)
       {
         var endExt = function(path, match)
@@ -136,13 +136,13 @@
         this.name = this.name || options.url;
 
         template = EJS.get(this.name, this.cache);
-        
+
         if (template == EJS.INVALID_PATH)
           return null;
-        
+
         if (template)
           return this.template = template;
-          
+
         try
         {
           addon = !this.cache ? ('?' + Math.random()) : '';
@@ -194,12 +194,12 @@
       this.extMatch = new RegExp(this.ext.replace(/\./, '\.'));
     }
   };
-  
+
   EJS.endExt = function(path, match)
   {
     if(!path)
       return null;
-    
+
     match.lastIndex = 0;
     if (!match.test(path))
       path += this.ext;
@@ -230,11 +230,11 @@
   }
 
 
-  EJS.IsolateNames = ["first", "escape"];  
+  EJS.IsolateNames = ["first", "escape"];
   EJS.Canvas = function(obj)
   {
     this.across = new EJS.Canvas.across;
-    
+
     for (var k in obj)
       if (obj.hasOwnProperty(k))
         if (EJS.IsolateNames.indexOf(k) == -1)
@@ -247,7 +247,7 @@
       return that;
     };
   };
-  
+
   EJS.Canvas.prototype =
   {
     hook_first : function(element)
@@ -276,12 +276,12 @@
     ,
     Render : function(str)
     {
-      return this.__canvas.join('');; 
+      return this.__canvas.join('');;
     }
   };
-  
+
   EJS.Canvas.across = function() {}
-  
+
   EJS.Canvas.across.prototype =
   {
     Defer : function(cb, time)
@@ -351,7 +351,7 @@
     {
       this.pre_cmd = ['__context.escape().DrawTo([])'];
       this.post_cmd = new Array();
-      this.source = ' ';  
+      this.source = ' ';
 
       if (source != null)
       {
@@ -363,7 +363,7 @@
         }
         else if (source.innerHTML)
           this.source = source.innerHTML;
-        
+
         if (typeof this.source != 'string')
           this.source = "";
       }
@@ -435,7 +435,7 @@
       this.out = '';
       var put_cmd = "__append(";
       var insert_cmd = put_cmd;
-      var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);    
+      var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);
       var content = '';
 
       var clean = function(content)
@@ -577,18 +577,18 @@
       throw first_e;
     }
   };
-   
+
   EJS.config = function(options)
   {
     EJS.cache = options.cache != null ? options.cache : EJS.cache;
     EJS.type = options.type != null ? options.type : EJS.type;
     EJS.ext = options.ext != null ? options.ext : EJS.ext;
-    
+
     var templates_directory = EJS.templates_directory; //nice and private container
 
     if (!EJS.templates_directory)
       EJS.templates_directory = templates_directory = {}
-    
+
     EJS.get = function(path, cache)
     {
       if(cache == false)
@@ -599,14 +599,14 @@
 
       return null;
     };
-    
+
     EJS.update = function(path, template)
-    { 
+    {
       if(path == null)
         return;
       templates_directory[path] = template;
     };
-    
+
     EJS.INVALID_PATH = -1;
   };
 
@@ -615,7 +615,7 @@
 
   /**
    * @constructor
-   * By adding functions to EJS.Helpers.prototype, those functions will be available in the 
+   * By adding functions to EJS.Helpers.prototype, those functions will be available in the
    * views.
    * @init Creates a view helper.  This function is called internally.  You should never call it.
    * @param {Object} data The data passed to the view.  Helpers have access to it through this._data
@@ -627,7 +627,7 @@
     extend(this, extras );
   };
   /* @prototype*/
-  EJS.Helpers.prototype = 
+  EJS.Helpers.prototype =
   {
     /**
      * Renders a new view.  If data is passed in, uses that to render the view.
@@ -651,27 +651,27 @@
      * For a given value, tries to create a human representation.
      * @param {Object} input the value being converted.
      * @param {Object} null_text what text should be present if input == null or undefined, defaults to ''
-     * @return {String} 
+     * @return {String}
      */
     to_text: function(input, null_text)
     {
       if(input == null || input === undefined)
         return null_text || '';
-      
+
       if(input instanceof Date)
         return input.toDateString();
-      
+
       if(input.toString)
-        return 
+        return
           input
             .toString()
             .replace(/\n/g, '<br />')
             .replace(/''/g, "'");
-      
+
       return '';
     }
   };
-  
+
   /* @Static*/
   EJS.Scanner = function(source, left, right)
   {
@@ -686,11 +686,11 @@
         left_at:          left + '%@',
         left_comment:     left + '%#'})
 
-    this.SplitRegexp = 
+    this.SplitRegexp =
         left == '['
       ? // what the hack
         /(\[%%)|(%%\])|(\[%=)|(\[%@)|(\[%#)|(\[%)|(%\]\n)|(%\])|(\n)/
-      : 
+      :
         new RegExp
           (
             '('
@@ -725,7 +725,7 @@
     if(input instanceof Date)
       return input.toDateString();
 
-    if(input.toString) 
+    if(input.toString)
       return input.toString();
 
     return '';
@@ -737,7 +737,7 @@
     {
       scanline = this.scanline;
       regex = this.SplitRegexp;
-     
+
       if (!this.source == '')
       {
         var source_split = rsplit(this.source, /\n/);
@@ -752,9 +752,9 @@
     scanline: function(line, regex, block)
     {
       this.lines++;
-      
+
       var line_split = rsplit(line, regex);
-      
+
       for(var i = 0; i < line_split.length; i++)
       {
         var token = line_split[i];
@@ -779,12 +779,12 @@
     this.script = "";
     this.pre_cmd = pre_cmd;
     this.post_cmd = post_cmd;
-    
+
     for (var i = 0; i < this.pre_cmd.length; i++)
       this.push(pre_cmd[i]);
   };
 
-  EJS.Buffer.prototype = 
+  EJS.Buffer.prototype =
   {
     push: function(cmd)
     {
@@ -817,11 +817,11 @@
     var factories =
     [
       function()
-      { 
+      {
         return new ActiveXObject("Msxml2.XMLHTTP");
       },
       function()
-      { 
+      {
         return new XMLHttpRequest();
       },
       function()
@@ -847,10 +847,10 @@
       newRequest = func;
       return ret;
     }
-    
+
     throw "Request object type not found";
   }
-    
+
   EJS.request = function(path)
   {
     var request = new EJS.newRequest()
@@ -870,7 +870,7 @@
     if (request.status == 2)
       return null;
 
-    if (request.status == 0 && request.responseText == '') 
+    if (request.status == 0 && request.responseText == '')
       return null;
 
     return request.responseText
@@ -898,18 +898,18 @@
         params.onComplete(request);
       }
     }
-    
+
     request.open(params.method, params.url)
     request.send(null)
   }
-  
+
   var rsplit = function(string, regex)
   {
-    var 
+    var
       result = regex.exec(string),
       retArr = new Array(),
-      first_idx, 
-      last_idx, 
+      first_idx,
+      last_idx,
       first_bit;
 
     while (result != null)
@@ -922,13 +922,13 @@
         first_bit = string.substring(0,first_idx);
         retArr.push(string.substring(0,first_idx));
         string = string.slice(first_idx);
-      }    
+      }
 
       retArr.push(result[0]);
       string = string.slice(result[0].length);
-      result = regex.exec(string);  
+      result = regex.exec(string);
     }
-    
+
     if (!string == '')
       retArr.push(string);
     return retArr;
