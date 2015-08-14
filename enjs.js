@@ -230,7 +230,7 @@
   }
 
 
-  EJS.IsolateNames = ["first", "escape"];
+  EJS.IsolateNames = ["first", "escape", "__append"];
   EJS.Canvas = function(obj)
   {
     this.across = new EJS.Canvas.across;
@@ -325,13 +325,15 @@
                  .replace(/'/g, "&#039;");
       }
     ,
-    GetAppendMethod : function()
-    {
+    __append : function()
+    { // Lube your brain, friend
       var that = this.escape();
-      return function()
+      this.__append = function()
       {
         return that.Append.apply(that, arguments);
       };
+
+      return this.__append.apply(this, arguments);
     }
   };
 
@@ -405,7 +407,6 @@
         {
           var __context = this;
           var __this = this;
-          var __append = this.GetAppendMethod();
           // HERE WILL BE CODE COMPILED FROM EJS
         })
       */
@@ -415,8 +416,7 @@
         (function()\n\
         {\n\
           var __context = this;\n\
-          var __this = this;\n\
-          var __append = this.GetAppendMethod();\n'
+          var __this = this;\n'
           // HERE WILL BE CODE COMPILED FROM EJS
           + this.out
           + '\n\
@@ -435,7 +435,7 @@
     tokenize: function(options)
     {
       this.out = '';
-      var put_cmd = "__append(";
+      var put_cmd = "this.__append(";
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);
       var content = '';
