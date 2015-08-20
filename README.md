@@ -1,8 +1,13 @@
+[![Codacy Badge](https://www.codacy.com/project/badge/33b35eefa9844211bae507d390b6c57d)](https://www.codacy.com/app/enelar/ENJS)
+[![Packagist stable](https://img.shields.io/packagist/v/phoxy/enjs.svg)](https://packagist.org/packages/phoxy/phoxy)
+[![Packagist unstable](https://img.shields.io/packagist/vpre/phoxy/enjs.svg)](https://packagist.org/packages/phoxy/phoxy)
+[![Packagist license](https://img.shields.io/packagist/l/phoxy/enjs.svg)](https://packagist.org/packages/phoxy/phoxy)
+[![Packagist total](https://img.shields.io/packagist/dt/phoxy/enjs.svg)](https://packagist.org/packages/phoxy/phoxy)
+
 This is *UNCOMPATIBLE* fork from http://embeddedjs.com/
 Embedded JavaScript
 
 ===
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Enelar/EJS?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Main differences:
 * All rendering EJS have their own context. All arguments stored in this object (dublicated to local variable __context).
 * All EJS local variables ARE NOT creating in window['var']. They are local.
