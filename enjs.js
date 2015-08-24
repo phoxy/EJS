@@ -14,11 +14,6 @@
     {
       var obj = this.template.process(object);
       obj.name = this.name;
-
-      obj.across.Defer(function()
-      {
-        this.first(true);
-      });
       return obj;
     }
     ,
@@ -407,7 +402,15 @@
         {
           var __context = this;
           var __this = this;
+          var __first = this.first;
+          this.Defer(function()
+          { // initialize first
+            this.first(true);
+            __first = this.first;
+          });
+          // Begin of user code
           // HERE WILL BE CODE COMPILED FROM EJS
+          // End of user code
         })
       */
 
@@ -416,10 +419,19 @@
         (function()\n\
         {\n\
           var __context = this;\n\
-          var __this = this;\n'
+          var __this = this;\n\
+          var __first = this.first;\n\
+          this.Defer(function()\n\
+          { // initialize first\n\
+            this.first(true);\n\
+            __first = this.first;\n\
+          });\n\
+          // Begin of user code\n\
+        '
           // HERE WILL BE CODE COMPILED FROM EJS
           + this.out
           + '\n\
+          // End of user code\n\
         })\n';
 
       try
