@@ -19,8 +19,13 @@
     ,
     execute : function(obj)
     {
-      obj._EJS_EXECUTE_FUNC.call(obj.across);
+      // Deprecating this access
+      // Look https://github.com/phoxy/phoxy/issues/108
+      var fake_this = EJS.Canvas.fake_across(obj.across);
+
+      obj._EJS_EXECUTE_FUNC.call(fake_this);
       var ret = obj.Render();
+
       obj.RenderCompleted.call(obj, ancor_id);
 
       function RandomNumb()
@@ -332,6 +337,25 @@
     }
   };
 
+  EJS.Canvas.fake_across = function(across) {
+    var ret = {__raw: across};
+    for (var k in across)
+      if (typeof across[k] !== 'function')
+        ret[k] = across[k];
+      else
+      {
+        ret[k] = function()
+        {
+          console.log("Notice: Deprecated mine. Look https://github.com/phoxy/phoxy/issues/108");
+          return arguments.callee.origin.apply(this.__raw, arguments);
+        }
+
+        ret[k].origin = across[k];
+      }
+
+    return ret;
+  }
+
   /* Code below DEEP internal
    * Do not waste your time.
    * TODO: Refactor
@@ -346,7 +370,7 @@
   {
     construct: function(source, left)
     {
-      this.pre_cmd = ['__context.escape().DrawTo([])'];
+      this.pre_cmd = ['__this.escape().DrawTo([])'];
       this.post_cmd = new Array();
       this.source = ' ';
 
@@ -401,12 +425,12 @@
         (function()
         {
           var __context = this;
-          var __this = this;
-          var __first = this.first;
-          this.Defer(function()
+          var __this = this.__raw;
+          var __first = __this.first;
+          __this.Defer(function()
           { // initialize first
-            this.first(true);
-            __first = this.first;
+            __this.first(true);
+            __first = __this.first;
           });
           // Begin of user code
           // HERE WILL BE CODE COMPILED FROM EJS
@@ -419,12 +443,12 @@
         (function()\n\
         {\n\
           var __context = this;\n\
-          var __this = this;\n\
-          var __first = this.first;\n\
-          this.Defer(function()\n\
+          var __this = this.__raw;\n\
+          var __first = __this.first;\n\
+          __this.Defer(function()\n\
           { // initialize first\n\
-            this.first(true);\n\
-            __first = this.first;\n\
+            __this.first(true);\n\
+            __first = __this.first;\n\
           });\n\
           // Begin of user code\n\
         '
@@ -447,7 +471,7 @@
     tokenize: function(options)
     {
       this.out = '';
-      var put_cmd = "this.__append(";
+      var put_cmd = "__this.__append(";
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);
       var content = '';
@@ -509,7 +533,7 @@
               }
               break;
             case scanner.left_at:
-              buff.push("\n" + insert_cmd + "(__context.XSSEscape(EJS.Scanner.to_text(" + content + "))))");
+              buff.push("\n" + insert_cmd + "(__this.XSSEscape(EJS.Scanner.to_text(" + content + "))))");
               break;
             case scanner.left_equal:
               buff.push("\n" + insert_cmd + "(EJS.Scanner.to_text(" + content + ")))");
