@@ -430,7 +430,7 @@
 
       this.tokenize(options);
       /*
-        (function(__this)
+        (function file_name(__this)
         {
           // Using this / __context is DEPRECATED
           var __context = this;
@@ -440,9 +440,11 @@
         })
       */
 
+      var func_name = name.replace(/\W/g, "_");
+
       var to_be_evaled =
         '//' + name + '\n\
-        (function(__this)\n\
+        (function ' + func_name + '(__this)\n\
         {\n\
           // Using this / __context is DEPRECATED\n\
           var __context = this;\n\
