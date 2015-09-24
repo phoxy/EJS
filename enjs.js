@@ -246,6 +246,8 @@
     {
       return that;
     };
+
+    this.DrawTo([])
   };
 
   EJS.Canvas.prototype =
@@ -280,7 +282,13 @@
     }
   };
 
-  EJS.Canvas.across = function() {}
+  EJS.Canvas.across = function()
+  {
+    this.Defer(function()
+    {
+      this.first(true);
+    })
+  }
 
   EJS.Canvas.across.prototype =
   {
@@ -370,8 +378,8 @@
   {
     construct: function(source, left)
     {
-      this.pre_cmd = ['__this.escape().DrawTo([])'];
-      this.post_cmd = new Array();
+      this.pre_cmd = [];
+      this.post_cmd = [];
       this.source = ' ';
 
       if (source != null)
@@ -426,12 +434,6 @@
         {
           var __context = this;
           var __this = this.__raw;
-          var __first = __this.first;
-          __this.Defer(function()
-          { // initialize first
-            __this.first(true);
-            __first = __this.first;
-          });
           // Begin of user code
           // HERE WILL BE CODE COMPILED FROM EJS
           // End of user code
@@ -444,14 +446,8 @@
         {\n\
           var __context = this;\n\
           var __this = this.__raw;\n\
-          var __first = __this.first;\n\
-          __this.Defer(function()\n\
-          { // initialize first\n\
-            __this.first(true);\n\
-            __first = __this.first;\n\
-          });\n\
           // Begin of user code\n\
-        '
+          \n'
           // HERE WILL BE CODE COMPILED FROM EJS
           + this.out
           + '\n\
