@@ -23,7 +23,7 @@
       // Look https://github.com/phoxy/phoxy/issues/108
       var fake_this = EJS.Canvas.fake_across(obj.across);
 
-      obj._EJS_EXECUTE_FUNC.call(fake_this);
+      obj._EJS_EXECUTE_FUNC.call(fake_this, obj.across);
       var ret = obj.Render();
 
       obj.RenderCompleted.call(obj, ancor_id);
@@ -430,10 +430,10 @@
 
       this.tokenize(options);
       /*
-        (function()
+        (function(__this)
         {
+          // Using this / __context is DEPRECATED
           var __context = this;
-          var __this = this.__raw;
           // Begin of user code
           // HERE WILL BE CODE COMPILED FROM EJS
           // End of user code
@@ -442,10 +442,10 @@
 
       var to_be_evaled =
         '//' + name + '\n\
-        (function()\n\
+        (function(__this)\n\
         {\n\
+          // Using this / __context is DEPRECATED\n\
           var __context = this;\n\
-          var __this = this.__raw;\n\
           // Begin of user code\n\
           \n'
           // HERE WILL BE CODE COMPILED FROM EJS
