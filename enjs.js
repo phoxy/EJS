@@ -119,6 +119,19 @@
         return EJS.update(this.name, this);
       }
 
+      var that = this;
+      function ProcessTemplate(text)
+      {
+        var template = new EJS.Compiler(text, that.type);
+
+        template.compile(options, that.name);
+        EJS.update(that.name, template);
+        that.template = template;
+
+        if (typeof cb == 'function')
+          cb();
+      }
+
       if (options.url)
       {
         var endExt = function(path, match)
@@ -174,16 +187,6 @@
         this.name = element.id;
         this.type = '[';
         options.element = element;
-      }
-
-      var that = this;
-      function ProcessTemplate(text)
-      {
-        var template = new EJS.Compiler(text, that.type);
-
-        template.compile(options, that.name);
-        EJS.update(that.name, template);
-        that.template = template;
       }
 
       if (this.text)
