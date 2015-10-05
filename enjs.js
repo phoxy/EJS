@@ -2,7 +2,7 @@
 {
   var rsplit, chop, extend;
 
-  EJS = function( options )
+  EJS = function( options, cb )
   {
     this.construct.apply(this, arguments);
   };
