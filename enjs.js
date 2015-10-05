@@ -167,11 +167,18 @@
         options.element = element;
       }
 
-      var template = new EJS.Compiler(this.text, this.type);
+      var that = this;
+      function ProcessTemplate()
+      {
+        var template = new EJS.Compiler(that.text, that.type);
 
-      template.compile(options, this.name);
-      EJS.update(this.name, template);
-      this.template = template;
+        template.compile(options, that.name);
+        EJS.update(that.name, template);
+        that.template = template;
+      }
+
+      if (this.text)
+        ProcessTemplate();
     }
     ,
     out : function()
