@@ -887,19 +887,28 @@
     throw "Request object type not found";
   }
 
-  EJS.request = function(path)
+  EJS.request = function(path, callback)
   {
     var request = new EJS.newRequest()
-    request.open("GET", path, false);
+    var async = typeof callback === 'function';
+
+    request.open("GET", path, async);
+    request.onreadystatechange = function ejs_on_request_ready()
+    {
+      if (request.readyState > 3 && async)
+        callback(request.responseText, request);
+    };
 
     try
     {
-      request.send(null);
-    }
-    catch(e)
+      request.send(null)
+    } catch(e)
     {
       return null;
     }
+
+    if (async)
+      return;
 
     if (request.status == 404)
       return null;
@@ -909,7 +918,7 @@
     if (request.status == 0 && request.responseText == '')
       return null;
 
-    return request.responseText
+    return request.responseText;
   }
 
   EJS.ajax_request = function(params)
