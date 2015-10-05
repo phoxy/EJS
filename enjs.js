@@ -107,7 +107,7 @@
         element.innerHTML = this.render(options)
     }
     ,
-    construct : function(options)
+    construct : function(options, cb)
     {
       if (typeof options == "string")
         options = {view: options};
@@ -146,8 +146,17 @@
         try
         {
           addon = !this.cache ? ('?' + Math.random()) : '';
-          if ((this.text = EJS.request(options.url + addon)) == null)
-            throw null;
+
+          if (typeof cb !== 'function')
+          {
+            if ((this.text = EJS.request(options.url + addon)) == null)
+              throw null;
+          }
+          else
+          { // async
+            return EJS.request(options.url + addon, ProcessTemplate);
+          }
+
         } catch(e)
         {
           throw( {type: 'EJS', message: 'There is no template at ' + options.url} );
@@ -168,9 +177,9 @@
       }
 
       var that = this;
-      function ProcessTemplate()
+      function ProcessTemplate(text)
       {
-        var template = new EJS.Compiler(that.text, that.type);
+        var template = new EJS.Compiler(text, that.type);
 
         template.compile(options, that.name);
         EJS.update(that.name, template);
@@ -178,7 +187,7 @@
       }
 
       if (this.text)
-        ProcessTemplate();
+        ProcessTemplate(this.text);
     }
     ,
     out : function()
