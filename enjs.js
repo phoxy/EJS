@@ -248,25 +248,23 @@
     return EJS.IsolateContext.Directly(obj, copy, depth);
   }
 
+  EJS.IsolationDepth = 2;
+  EJS.IsolateNames = ["first", "escape", "__append"];
+
   EJS.IsolateContext.Directly = function(obj, into, depth)
   {
     for (var attr in obj)
       if (obj.hasOwnProperty(attr))
-        into[attr] = EJS.IsolateContext(obj[attr], depth);
+        if (EJS.IsolateNames.indexOf(attr) == -1)
+          into[attr] = EJS.IsolateContext(obj[attr], depth);
     return into;
   }
 
 
-  EJS.IsolationDepth = 2;
-  EJS.IsolateNames = ["first", "escape", "__append"];
   EJS.Canvas = function(obj)
   {
     this.across = new EJS.Canvas.across;
-
-    for (var k in obj)
-      if (obj.hasOwnProperty(k))
-        if (EJS.IsolateNames.indexOf(k) == -1)
-          this.across[k] = EJS.IsolateContext(obj[k], EJS.IsolationDepth);
+    EJS.IsolateContext.Directly(obj, this.across, EJS.IsolationDepth);
 
     var that = this;
 
