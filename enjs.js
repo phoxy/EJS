@@ -151,10 +151,17 @@
         template = EJS.get(this.name, this.cache);
 
         if (template == EJS.INVALID_PATH)
-          return null;
+          template = null;
 
         if (template)
-          return this.template = template;
+        {
+          this.template = template;
+
+          if (typeof cb == 'function')
+            cb();
+
+          return template;
+        }
 
         try
         {
