@@ -155,12 +155,13 @@
 
         if (template)
         {
-          this.template = template;
-
           if (typeof cb == 'function')
-            cb();
+            setTimeout(function()
+            {
+              cb();
+            }, 0);
 
-          return template;
+          return this.template = template;;
         }
 
         try
