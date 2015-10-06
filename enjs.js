@@ -257,6 +257,7 @@
   }
 
 
+  EJS.IsolationDepth = 2;
   EJS.IsolateNames = ["first", "escape", "__append"];
   EJS.Canvas = function(obj)
   {
@@ -265,7 +266,7 @@
     for (var k in obj)
       if (obj.hasOwnProperty(k))
         if (EJS.IsolateNames.indexOf(k) == -1)
-          this.across[k] = EJS.IsolateContext(obj[k], 1);
+          this.across[k] = EJS.IsolateContext(obj[k], EJS.IsolationDepth);
 
     var that = this;
 
