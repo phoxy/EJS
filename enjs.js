@@ -495,7 +495,7 @@
     tokenize: function(options)
     {
       this.out = '';
-      var put_cmd = "__this.__append(";
+      var put_cmd = ";(this instanceof EJS.Canvas.across ? this : __this).__append(";
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);
       var content = '';
