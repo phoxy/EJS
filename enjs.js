@@ -156,10 +156,10 @@
         if (template)
         {
           if (typeof cb == 'function')
-            setTimeout(function()
+            EJS.Canvas.across.prototype.Defer(function EJS_construct_prepared_template_reshedule()
             {
               cb();
-            }, 0);
+            });
 
           return this.template = template;;
         }
@@ -310,7 +310,7 @@
 
   EJS.Canvas.across = function()
   {
-    this.Defer(function()
+    this.Defer(function across_calc_first()
     {
       this.first(true);
     })
@@ -321,7 +321,7 @@
     Defer : function(cb, time)
     {
       var that = this;
-      setTimeout(function()
+      setTimeout(function defer()
       {
         cb.apply(that);
       }, time);
@@ -330,7 +330,7 @@
     first : function(cb)
     {
       if (typeof cb == 'function')
-        return this.Defer(function()
+        return this.Defer(function EJS_force_calculate_first()
           {
             cb.apply(this.first());
           });
