@@ -480,7 +480,9 @@
           + this.out
           + '\n\
           // End of user code\n\
-        })\n';
+        })\n'
+          + '//# sourceURL=' + name + '\n';
+
 
       try
       {
