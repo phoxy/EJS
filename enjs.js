@@ -467,6 +467,7 @@
       */
 
       var func_name = name.replace(/\W/g, "_");
+      var source_url = (options.domain || "") + name;
 
       var to_be_evaled =
         '//' + name + '\n\
@@ -481,7 +482,7 @@
           + '\n\
           // End of user code\n\
         })\n'
-          + '//# sourceURL=' + name + '\n';
+          + '//# sourceURL=' + source_url + '\n';
 
 
       try
