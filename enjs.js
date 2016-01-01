@@ -276,6 +276,13 @@
     this.DrawTo([])
   };
 
+  EJS.Canvas.BestContext = function(a, b)
+  {
+    if (a instanceof EJS.Canvas)
+      return a;
+    return b;
+  }
+
   EJS.Canvas.prototype =
   {
     hook_first : function(element)
@@ -498,7 +505,7 @@
     tokenize: function(options)
     {
       this.out = '';
-      var put_cmd = ";(this instanceof EJS.Canvas.across ? this : __this).__append(";
+      var put_cmd = "; EJS.Canvas.BestContext(this, __this).__append(";
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);
       var content = '';
