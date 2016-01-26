@@ -278,7 +278,7 @@
 
   EJS.Canvas.BestContext = function(a, b)
   {
-    if (a instanceof EJS.Canvas)
+    if (a instanceof EJS.Canvas.across)
       return a;
     return b;
   }
