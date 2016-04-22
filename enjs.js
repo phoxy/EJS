@@ -19,49 +19,26 @@
     ,
     execute : function(obj)
     {
+      // Generate DOM context ancors
+      var ancor_id = EJS.RandomNumb();
+      var ancor = EJS.CreateAncor(ancor_id);
+
+      // Begin search first context element as soon as possible
+      EJS.SheduleDomContextDiscovery(ancor_id, obj.across);
+
       // Deprecating this access
       // Look https://github.com/phoxy/phoxy/issues/108
       var fake_this = EJS.Canvas.fake_across(obj.across);
-
+      // Execute EJS, make it draw into virtual canvas
       obj._EJS_EXECUTE_FUNC.call(fake_this, obj.across);
+
+      // Dump virtual canvas into string
       var ret = obj.Render();
 
+      // Inform system that render completed
       obj.RenderCompleted.call(obj, ancor_id);
 
-      function RandomNumb()
-      {
-        var ret = "EJS_ANCOR_";
-
-        for (var i = 0; i < 10; i++)
-          ret += '0' + Math.floor(Math.random() * 10);
-
-        return ret;
-      }
-
-      var ancor_id = RandomNumb();
-      var ancor =  "<div id=\"" + ancor_id + "\" class='ejs_ancor'></div>";
-
-      var hook = obj.hook_first;
-
-      obj.across.first = function()
-      {
-        if (typeof(obj.first) != 'undefined')
-          return hook(obj.first);
-
-        var ancor = document.getElementById(ancor_id);
-        if (ancor == null)
-          return null;
-        var elem = ancor;
-        do
-        {
-          elem = elem.nextSibling;
-        } while (elem && elem.nodeType !== 1);
-
-        obj.first = elem;
-        ancor.parentNode.removeChild(ancor);
-        return this.first();
-      };
-
+      // Return resulting html to client
       obj.html = ancor + ret;
       return ret;
     }
@@ -260,6 +237,29 @@
     return into;
   }
 
+  EJS.RandomNumb = function()
+  {
+    var ret = "EJS_ANCOR_";
+
+    for (var i = 0; i < 10; i++)
+      ret += '0' + Math.floor(Math.random() * 10);
+
+    return ret;
+  };
+
+  EJS.CreateAncor = function(ancor_id)
+  {
+    return  "<div id=\"" + ancor_id + "\" class='ejs_ancor'></div>";
+  };
+
+  EJS.SheduleDomContextDiscovery = function(ancor, context)
+  {
+    context.Defer(function()
+    {
+      context.escape().get_first_context_dom_element(ancor);
+    });
+  };
+
 
   EJS.Canvas = function(obj)
   {
@@ -274,6 +274,7 @@
     };
 
     this.DrawTo([])
+    this.completed = false;
   };
 
   EJS.Canvas.BestContext = function(a, b)
@@ -285,6 +286,26 @@
 
   EJS.Canvas.prototype =
   {
+    get_first_context_dom_element : function(ancor_id)
+    {
+      if (typeof(this.first_dom_element_cached) != 'undefined')
+        return this.first_dom_element_cached;
+
+      var ancor = document.getElementById(ancor_id);
+      if (ancor == null)
+        return null;
+
+      var elem = ancor;
+      do
+      {
+        elem = elem.nextSibling;
+      } while (elem && elem.nodeType !== 1);
+
+      this.first_dom_element_cached = this.hook_first(elem);
+
+      ancor.parentNode.removeChild(ancor);
+      return this.get_first_context_dom_element();
+    },
     hook_first : function(element)
     {
       return element;
@@ -292,6 +313,7 @@
     ,
     RenderCompleted : function(ancor_id)
     {
+      this.completed = true;
       // You could overload this method and hook moment between EJS render and first this.Defer
     }
     ,
@@ -327,6 +349,9 @@
   {
     Defer : function(cb, time)
     {
+      if (time <= 0 || !time)
+        time = 0;
+
       var that = this;
       setTimeout(function defer()
       {
@@ -336,18 +361,26 @@
     ,
     first : function(cb)
     {
+      var canvas = this.escape();
+      if (canvas.completed)
+        return canvas.get_first_context_dom_element();
+
+      var context = this;
       if (typeof cb == 'function')
-        return this.Defer(function EJS_force_calculate_first()
-          {
-            cb.apply(this.first());
-          });
+        return that.Defer(function EJS_force_calculate_first()
+        {
+          cb.apply(that.first());
+        });
 
       if (cb)
         return;
-      console.log(
+
+      console.log
+      (
         "EJS.Canvas",
         "EJS.Canvas.first() called to early. Use EJS.Canvas.Defer, or any other delay method",
-        this._EJS_EXECUTE_FUNC);
+        this._EJS_EXECUTE_FUNC
+      );
 
       // Maybe you trying access first element to early.
       // Firstly all design rendering as text, and storing as string.
