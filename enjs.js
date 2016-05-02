@@ -367,9 +367,9 @@
 
       var context = this;
       if (typeof cb == 'function')
-        return that.Defer(function EJS_force_calculate_first()
+        return context.Defer(function EJS_force_calculate_first()
         {
-          cb.apply(that.first());
+          cb.apply(context.first());
         });
 
       if (cb)
