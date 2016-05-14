@@ -339,10 +339,6 @@
 
   EJS.Canvas.across = function()
   {
-    this.Defer(function across_calc_first()
-    {
-      this.first(true);
-    })
   }
 
   EJS.Canvas.across.prototype =
@@ -362,8 +358,19 @@
     first : function(cb)
     {
       var canvas = this.escape();
+
       if (canvas.completed)
-        return canvas.get_first_context_dom_element();
+      {
+        var element = canvas.get_first_context_dom_element();
+        if (element == null)
+          console.log
+          (
+            "EJS.Canvas",
+            "EJS.Canvas.first() return's NULL context",
+            this._EJS_EXECUTE_FUNC
+          );
+        return element;
+      }
 
       var context = this;
       if (typeof cb == 'function')
