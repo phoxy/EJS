@@ -257,6 +257,9 @@
     context.Defer(function()
     {
       context.escape().get_first_context_dom_element(ancor);
+
+      var ancor_element = document.getElementById(ancor);
+      ancor_element.parentNode.removeChild(ancor_element);
     });
   };
 
@@ -303,7 +306,6 @@
 
       this.first_dom_element_cached = this.hook_first(elem);
 
-      ancor.parentNode.removeChild(ancor);
       return this.get_first_context_dom_element();
     },
     hook_first : function(element)
