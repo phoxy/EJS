@@ -418,6 +418,22 @@
 
       return this.__append.apply(this, arguments);
     }
+    ,
+    __BestContext : function(other_context)
+    {
+      return EJS.Canvas.BestContext(other_context, this);
+    }
+    ,
+    __AppendToBestContext : function(other_context)
+    {
+      var args = [].slice.call(arguments);
+
+        other_context = args.shift();
+      var my_context = this !== window ? this : args.shift();
+
+      var best_context = my_context.__BestContext(other_context);
+      return my_context.__append.apply(best_context, args);
+    }
   };
 
   EJS.Canvas.fake_across = function(across) {
@@ -507,8 +523,8 @@
       /*
         (function file_name(__this)
         {
-          // Using this / __context is DEPRECATED
-          var __context = this;
+          // Simplify average look by using this abbreviations
+          var _T = __this, _BC = __this.__BestContext, _ABC = __AppendToBestContext, _A = "__append", _X = __this.XSSEscape, _S = EJS.Scanner.to_text;
           // Begin of user code
           // HERE WILL BE CODE COMPILED FROM EJS
           // End of user code
@@ -522,8 +538,8 @@
         '//' + name + '\n\
         (function ' + func_name + '(__this)\n\
         {\n\
-          // Using this / __context is DEPRECATED\n\
-          var __context = this;\n\
+          // Simplify average look by using this abbreviations\n\
+          var _T = __this, _BC = _T.__BestContext, _ABC = _T.__AppendToBestContext, _X = __this.XSSEscape, _S = EJS.Scanner.to_text;\n\
           // Begin of user code\n\
           \n'
           // HERE WILL BE CODE COMPILED FROM EJS
@@ -547,7 +563,7 @@
     tokenize: function(options)
     {
       this.out = '';
-      var put_cmd = "; EJS.Canvas.BestContext(this, __this).__append(";
+      var put_cmd = ";_ABC(this,_T,";
       var insert_cmd = put_cmd;
       var buff = new EJS.Buffer(this.pre_cmd, this.post_cmd);
       var content = '';
@@ -609,10 +625,10 @@
               }
               break;
             case scanner.left_at:
-              buff.push("\n" + insert_cmd + "(__this.XSSEscape(EJS.Scanner.to_text(" + content + "))))");
+              buff.push("\n" + insert_cmd + "_X(_S(" + content + ")))");
               break;
             case scanner.left_equal:
-              buff.push("\n" + insert_cmd + "(EJS.Scanner.to_text(" + content + ")))");
+              buff.push("\n" + insert_cmd + "_S(" + content + "))");
               break;
             }
 
