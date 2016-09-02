@@ -352,12 +352,24 @@
     shedule_dom_discovery: function()
     {
       var that = this;
+
+      var attempt = 0;
+      var frequency = 0.1;
+      var timeout = 10;
+
       var check = function()
       {
+        attempt++;
+        if (attempt > timeout / frequency)
+        {
+          console.log("ENJS: Unable to find ancor in " + timeout + "s. Abort");
+          clearInterval(this.dom_shedule_timer);
+        }
+
         that.try_discover_dom();
       };
 
-      that.dom_shedule_timer = setInterval(check, 100);
+      that.dom_shedule_timer = setInterval(check, 1000 * frequency);
 
       that.across.Defer(function try_find_first_dom_element()
       {
