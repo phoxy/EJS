@@ -106,7 +106,7 @@
         that.template = template;
 
         if (typeof cb == 'function')
-          cb();
+          cb(that);
       }
 
       if (options.url)
@@ -125,20 +125,17 @@
         options.url = endExt(options.url, this.extMatch);
         this.name = this.name || options.url;
 
-        template = EJS.get(this.name, this.cache);
+        this.template = EJS.get(this.name, this.cache);
 
-        if (template == EJS.INVALID_PATH)
-          template = null;
+        if (this.template == EJS.INVALID_PATH)
+          this.template = null;
 
-        if (template)
+        if (this.template)
         {
           if (typeof cb == 'function')
-            EJS.Canvas.across.prototype.Defer(function EJS_construct_prepared_template_reshedule()
-            {
-              cb();
-            });
+            cb(this);
 
-          return this.template = template;;
+          return this;
         }
 
         try
