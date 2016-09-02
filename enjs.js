@@ -20,11 +20,11 @@
     execute : function(obj)
     {
       // Generate DOM context ancors
-      var ancor_id = EJS.RandomNumb();
-      var ancor = EJS.CreateAncor(ancor_id);
+      obj.ancor_id = EJS.RandomNumb();
+      var ancor = EJS.CreateAncor(obj.ancor_id);
 
       // Begin search first context element as soon as possible
-      EJS.SheduleDomContextDiscovery(ancor_id, obj.across);
+      obj.shedule_dom_discovery();
 
       // Deprecating this access
       // Look https://github.com/phoxy/phoxy/issues/108
@@ -36,7 +36,7 @@
       var ret = obj.Render();
 
       // Inform system that render completed
-      obj.RenderCompleted.call(obj, ancor_id);
+      obj.RenderCompleted.call(obj, obj.ancor_id);
 
       // Return resulting html to client
       obj.html = ancor + ret;
@@ -251,25 +251,9 @@
 
   EJS.SheduleDomContextDiscovery = function(ancor, context)
   {
-    var discover_render_ancor = function()
-    {
-      var ancor_element = document.getElementById(ancor);
-      if (!ancor_element)
-        return setTimeout(discover_render_ancor, 10);
-
-      context.escape().execute_defered_functions();
-    };
 
 
-    context.Defer(function()
-    {
-      context.escape().get_first_context_dom_element(ancor);
-
-      var ancor_element = document.getElementById(ancor);
-      ancor_element.parentNode.removeChild(ancor_element);
-    });
-
-    discover_render_ancor();
+    context.escape().shedule_dom_discovery();
   };
 
 
@@ -353,6 +337,40 @@
     {
       return this.__canvas.join('');;
     }
+    ,
+    try_discover_dom: function()
+    {
+      var ancor_element = document.getElementById(this.ancor_id);
+      if (!ancor_element)
+        return false;
+
+      clearInterval(this.dom_shedule_timer);
+      this.execute_defered_functions();
+      return true;
+    }
+    ,
+    shedule_dom_discovery: function()
+    {
+      var that = this;
+      var check = function()
+      {
+        that.try_discover_dom();
+      };
+
+      that.dom_shedule_timer = setInterval(check, 100);
+
+      that.across.Defer(function try_find_first_dom_element()
+      {
+        that.get_first_context_dom_element(that.ancor_id);
+      });
+
+      that.across.Defer(function remove_ancor()
+      {
+        var ancor_element = document.getElementById(that.ancor_id);
+        ancor_element.parentNode.removeChild(ancor_element);
+      });
+    }
+    ,
   };
 
   EJS.Canvas.across = function()
