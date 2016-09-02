@@ -26,11 +26,8 @@
       // Begin search first context element as soon as possible
       obj.shedule_dom_discovery();
 
-      // Deprecating this access
-      // Look https://github.com/phoxy/phoxy/issues/108
-      var fake_this = EJS.Canvas.fake_across(obj.across);
       // Execute EJS, make it draw into virtual canvas
-      obj._EJS_EXECUTE_FUNC.call(fake_this, obj.across);
+      obj._EJS_EXECUTE_FUNC(obj.across);
 
       // Dump virtual canvas into string
       var ret = obj.Render();
@@ -488,25 +485,6 @@
       return my_context.__append.apply(best_context, args);
     }
   };
-
-  EJS.Canvas.fake_across = function(across) {
-    var ret = {__raw: across};
-    for (var k in across)
-      if (typeof across[k] !== 'function')
-        ret[k] = across[k];
-      else
-      {
-        ret[k] = function()
-        {
-          console.log("Notice: Deprecated mine. Look https://github.com/phoxy/phoxy/issues/108");
-          return arguments.callee.origin.apply(this.__raw, arguments);
-        }
-
-        ret[k].origin = across[k];
-      }
-
-    return ret;
-  }
 
   /* Code below DEEP internal
    * Do not waste your time.
