@@ -254,6 +254,16 @@
 
   EJS.SheduleDomContextDiscovery = function(ancor, context)
   {
+    var discover_render_ancor = function()
+    {
+      var ancor_element = document.getElementById(ancor);
+      if (!ancor_element)
+        return setTimeout(discover_render_ancor, 10);
+
+      context.escape().execute_defered_functions();
+    };
+
+
     context.Defer(function()
     {
       context.escape().get_first_context_dom_element(ancor);
@@ -261,6 +271,8 @@
       var ancor_element = document.getElementById(ancor);
       ancor_element.parentNode.removeChild(ancor_element);
     });
+
+    discover_render_ancor();
   };
 
 
@@ -278,6 +290,7 @@
 
     this.DrawTo([])
     this.completed = false;
+    this.defered_functions = [];
   };
 
   EJS.Canvas.BestContext = function(a, b)
@@ -308,6 +321,12 @@
 
       return this.get_first_context_dom_element();
     },
+    execute_defered_functions: function()
+    {
+      for (var k in this.defered_functions)
+        this.defered_functions[k].call(this.across);
+    }
+    ,
     hook_first : function(element)
     {
       return element;
@@ -347,14 +366,21 @@
   {
     Defer : function(cb, time)
     {
-      if (time <= 0 || !time)
-        time = 0;
+      var escape = this.escape();
 
-      var that = this;
-      setTimeout(function defer()
+      if (time <= 0 || !time)
+        return escape.defered_functions.push(cb);
+
+      console.log("ENJS: __this.Defer with time is deprecated");
+      var timeout = function(that)
       {
-        cb.apply(that);
-      }, time);
+        setTimeout(function defer()
+        {
+          cb.apply(that);
+        }, time);
+      };
+
+      this.Defer(timeout);
     }
     ,
     first : function(cb)
