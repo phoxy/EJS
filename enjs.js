@@ -360,7 +360,7 @@
         if (attempt > timeout / frequency)
         {
           console.log("ENJS: Unable to find ancor in " + timeout + "s. Abort");
-          clearInterval(this.dom_shedule_timer);
+          clearInterval(that.dom_shedule_timer);
         }
 
         that.try_discover_dom();
