@@ -566,7 +566,7 @@
       var source_url = (options.domain || "") + name;
 
       var to_be_evaled =
-        '//' + name + '\n\
+        '// ' + name + '\n\
         (function ' + func_name + '(__this)\n\
         {\n\
           // Simplify average look by using this abbreviations\n\
@@ -578,7 +578,7 @@
           + '\n\
           // End of user code\n\
         })\n'
-          + '//# sourceURL=' + source_url + '\n';
+          + '//# sourceURL=' + source_url.replace(/([^:])\/\//g, "$1/") + '\n';
 
 
       try
