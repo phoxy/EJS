@@ -565,19 +565,23 @@
       var func_name = name.replace(/\W/g, "_");
       var source_url = (options.domain || "") + name;
 
+
       var to_be_evaled =
         '// ' + name + '\n\
         (function ' + func_name + '(__this)\n\
         {\n\
           // Simplify average look by using this abbreviations\n\
           var _T = __this, _BC = _T.__BestContext, _ABC = _T.__AppendToBestContext, _X = __this.XSSEscape, _S = EJS.Scanner.to_text;\n\
-          // Begin of user code\n\
-          \n'
+          // Begin of user code\n'
+          + (options.debug_ancors ? '_T.__append("<!-- <% ' + name + ' -->") \n' : '')
+
+          + '\n'
           // HERE WILL BE CODE COMPILED FROM EJS
           + this.out
           + '\n\
-          // End of user code\n\
-        })\n'
+          // End of user code\n'
+          + (options.debug_ancors ? '_T.__append("<!-- ' + name + ' %> -->") \n' : '')
+      + '})\n'
           + '//# sourceURL=' + source_url.replace(/([^:])\/\//g, "$1/") + '\n';
 
 
