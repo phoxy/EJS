@@ -1,0 +1,32 @@
+<%
+/* Purpose: requiring missing scripts in ejs cascade
+ * Usage:
+ *   __this.CascadeDesign('snippets/require', obj);
+ * Where object is:
+ * {
+ *   design: original design that will called as soon scripts ready
+ *   data: original data of for original design
+ *   script: array of required scripts (or string for single file)
+ * }
+ * How it done:
+ *   It using local data sequence generation feature
+ *   While simulating data digging it recuiring missing scripts
+ *   When they ready, continue execution
+ */
+
+function RequireFunctor(cb)
+{
+  var script = __this.script;
+
+  if (typeof script == 'string')
+    script = [script];
+
+  require(script, function()
+  {
+    cb(__this.data);
+  });
+}
+
+__this.CascadeDesign(__this.design, RequireFunctor)
+
+%>

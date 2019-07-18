@@ -1,0 +1,47 @@
+<%
+/* Purpose: execute functor for each array value
+ * Usage:
+ *   __this.CascadeDesign('snippets/each', obj);
+ * Where object is:
+ * {
+ *   arr: [a,b,c]
+ *   each: function(v)
+ *   {
+ *     // HTML or any javascript code here
+ *     // Because this is callback, your valid context
+ *     // this, and not __this. If you get it, you could use both
+ *   }
+ * }
+ *  a, b, c - elements in array
+ *  v - iterator that would executed for each element
+ * How it done:
+ *   For each element snipped change swap current canvas into new one
+ *   After functor did his job, new canvas appends to current
+ *   This allow you do complex cross-context manipulations with canvas
+ *   Even discart anything you did just now
+ * Functor example:
+ *   obj.each = function(v)
+ *   {
+ *      < % <-- use without spaces of-course
+ *        Drawing element #< %@ v.each_id % >
+ *        < %@ v.title % >
+ *      % >
+ *   })
+ */
+
+var id = __this.arr.length;
+
+for (var k in __this.arr)
+{
+  var v = __this.arr[k];
+  v.each_id = id--;
+
+  // Isolate canvas
+  var origin_canvas = __this.escape().DrawTo([]);
+    __this.each(v, k);
+  var just_drawed = __this.escape().DrawTo(origin_canvas);
+  // In case comeone messed with canvas too
+  __this.escape().DrawTo(origin_canvas.concat(just_drawed));
+}
+
+%>

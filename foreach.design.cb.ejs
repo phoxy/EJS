@@ -1,0 +1,32 @@
+<%
+/* Purpose: Execute foreach command on unknown dataset
+ * Usage:
+ *   __this.CascadeDesign('snippets/foreach.design.cb', obj);
+ * Where object is:
+ * {
+ *   design: a
+ *   cb: b
+ * }
+ *  a - design file to draw
+ *  b - async callback method with data
+ * How it done:
+ *   After b method trigger data ready callback,
+ *   multiply design commands append
+ */
+
+function cb_helper(cb)
+{
+  function wait_for_data(data)
+  {
+    cb
+    ({
+      data: data,
+      design: __this.design,
+    })
+  }
+
+  __this.cb(wait_for_data);
+}
+
+__this.CascadeDesign('snippets/foreach.design.cb_helper', cb_helper);
+%>

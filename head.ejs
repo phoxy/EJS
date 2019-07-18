@@ -1,0 +1,74 @@
+<%
+/* Purpose: move additional information to header
+ * Usage:
+ *   __this.CascadeDesign('snippets/head', obj);
+ * Where object is:
+ * {
+ *   scripts: javascript files that should be additional loaded
+ *   css: css files that should be linked
+ *   callback: method for custom head data append
+ * }
+ * Notification: snippets finishing as soon as last script loaded
+ */
+%>
+
+
+<div class='to-head'>
+<%
+for (var k in __this.scripts)
+{
+%>
+  <require src="<%@ __this.scripts[k] %>"></require>
+<%
+}
+%>
+
+<%
+for (var k in __this.async_scripts)
+{
+%>
+  <async_require src="<%@ __this.async_scripts[k] %>"></async_require>
+<%
+}
+%>
+
+<%
+for (var k in __this.css)
+{
+%>
+  <link rel="stylesheet" href="<%@ __this.css[k] %>">
+<%
+}
+%>
+
+<%
+if (typeof __this.callback == 'function')
+  __this.callback();
+%>
+</div>
+
+<%
+__this.escape().recursive++; // forcing wait for script load
+__this.Defer(function()
+{
+  var scripts = [];
+  __this.first().find('require').detach().each(function()
+  {
+    scripts.push($(this).attr('src'));
+  });
+  phoxy.Log(4, "Head require", scripts);
+  require(scripts, function()
+  {
+    phoxy.Log(3, "Head scripts loaded");
+    __this.escape().CheckIsCompleted.call(__this);
+  });
+
+  __this.first().find('async_require').detach().each(function()
+  {
+    require([$(this).attr('src')], function() {});
+  });
+
+  var element = this.first().detach();
+  $('head').append(element.children());
+})
+%>

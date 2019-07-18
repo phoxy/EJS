@@ -1,0 +1,27 @@
+<%
+/* Purpose: render only if unknown
+ * Usage:
+ *   __this.CascadeDesign('snippets/singletone', obj);
+ * Where object is:
+ * {
+ *   st: array of properties
+ * }
+ * st[0] - network resource to be threated as singletone
+ * st[1] (optional) - data supplied with resource, if needed
+ * How it done:
+ *   It using deprecated phoxy.ForwardDownload to check is file available at runtime
+ *   In other words its check is file was requested in current session
+ *   If not, it request with deprecated DeferRender
+ * Warning:
+ *   This feature works wrong. Between request and actual download finish singletone
+ *   threaded as unknown. So there could be multiply instances. Avoid to use this snippet.
+ */
+
+phoxy.Log(2, "snippets.singletone deprecated and probably would be removed in future versions");
+
+if (phoxy.ForwardDownload(__this.st[0]))
+  return;
+
+__this.DeferRender(__this.st[0], __this.st[1])
+
+%>

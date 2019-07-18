@@ -1,0 +1,27 @@
+<%
+/* Purpose: delaying render
+ * Usage:
+ *   __this.CascadeDesign('snippets/each', obj);
+ * Where object is:
+ * {
+ *   design: original design call
+ *   data: original data of for original design
+ *   delay: time in milliseconds
+ * }
+ * How it done:
+ *   It using local data sequence generation feature
+ *   By simulating data digging it delaying original render
+ *   And after certan time continue execution
+ */
+
+function Delay(cb)
+{
+  phoxy.Defer(function snippets_delay_continue()
+  {
+    cb(__this.data);
+  }, __this.delay);
+}
+
+__this.CascadeDesign(__this.design, Delay);
+
+%>

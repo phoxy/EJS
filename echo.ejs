@@ -1,0 +1,16 @@
+<%
+/* Purpose: display first found data in object
+ * Usage:
+ *   __this.CascadeDesign('snippets/echo', obj);
+ * Where object is: any object with parameters
+ * How it done:
+ *   It began to search through all own object properties
+ *   When first is found its displayed
+ *   Otherwise obj.undefined exception thrown
+ */
+
+for (k in __this)
+  if (__this.hasOwnProperty(k))
+    break;
+%>
+<%@ __this[k] %>

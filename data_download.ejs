@@ -1,0 +1,108 @@
+<%
+/* Purpose: supply cascade with data then continue
+ * Usage:
+ *   __this.CascadeDesign('snippets/data_download', obj);
+ * Where object is:
+ * {
+ *   design: original design that will called as soon scripts ready
+ *   source: url location where data would downloaded from
+ *   data: (optional) any prepared data
+ *   into: (optional) if prepared data exsists, location to append downloaded
+ *   from: (optional) ignore any other data supplied from server
+ * }
+ * Data merging explanation:
+ *   Downloaded data is managed to merge with current exsists data
+ *   default location of merge is root of data object
+ *   And default exsist data is empty object, obviosly
+ *   obj.into threated as location in obj.data, and if such location
+ *   didnt exsists, it would be created.
+ * Data merging example:
+ *    data = {'hello': 'world'}
+ *    into = 'test.me'
+ *    server returned {'ultimate_answer': 42}
+ *   After merging design will supplied with
+ *    {
+ *      'hello' : 'world',
+ *      'test' :
+ *      {
+ *        'me' :
+ *        {
+ *          'ultimate_answer': 42
+ *        }
+ *      }
+ *    }
+ * How it done:
+ *   It using local data sequence generation feature
+ *   While simulating data digging it requesting server
+ *   When ready, merging excisting object with fresh one
+ *   By overwriting location mentioned in 'into'.
+ * Warning:
+ *   If into is empty, on any name collision prepared data has more power
+ */
+
+function Merge(a, b, into, from)
+{
+  if (typeof a !== 'object')
+    a = {};
+  if (typeof b !== 'object')
+    b = {};
+  if (typeof into === 'undefined')
+    into = "";
+  if (typeof from === 'undefined')
+    from = "";
+
+  var keys = into.split('.');
+  var res = a;
+
+  if (keys.length == 0) // root
+  {
+    res = {'a': a};
+    keys = ['a'];
+  }
+
+  while (keys.length > 1)
+  {
+    var k = keys.pop();
+
+    if (typeof res[k] == 'undefined')
+      res[k] = {};
+
+    res = res[k];
+  }
+
+  var key = keys.pop();
+
+  var keys = from.split('.');
+  var server_object = b;
+
+  while (keys.length)
+    server_object = server_object[keys.pop()];
+
+  if (Array.isArray(server_object))
+    res[key] = [];
+  else
+    res[key] = {};
+
+
+  for (var k in server_object)
+    if (server_object.hasOwnProperty(k))
+      if (!a.hasOwnProperty(k))
+        res[key][k] = server_object[k];
+
+  return a;
+}
+
+function DownloadFunctor(cb)
+{
+  var url = __this.source;
+
+  phoxy.AJAX(url, function(r)
+  {
+    var data = Merge(__this.data, r.data, __this.into, __this.from);
+    cb(data);
+  })
+}
+
+__this.CascadeDesign(__this.design, DownloadFunctor)
+
+%>

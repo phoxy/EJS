@@ -1,0 +1,85 @@
+<%
+/* Purpose: chaining efects on target design
+ * Usage:
+ *   __this.CascadeDesign('snippets/chain', obj);
+ * Where object is:
+ * {
+ *   chain: [a,b,c]
+ *   data: d
+ * }
+ *  b, c - effects that would be applied to a
+ *  a - target design, that would be rendered last
+ * How it done:
+ *   All effects registering as chain elements, and when
+ *   last element rendered, chain unrolling with calling
+ *   handlers. All effect MUST call this.chain() once
+ * Effect example:
+ *   __this.chain(function()
+ *   {
+ *     this.first(); // <-- first DOM element of target design
+ *     __this.first(); // <-- first DOM element of current chain
+ *   })
+ * Requirments:
+ *   ENJS isolation depth more on equal than 3
+ */
+
+var child_context = null;
+
+// Helper functions
+function chain(decorator)
+{ // Unroll the chain function. Reshedule remain tasks
+  var context = this;
+
+  context.CascadeDesign(child_context.design, child_context.data, function snippets_chain_payload_context_shorcut()
+  {
+    child_context.up(this);
+    if (typeof decorator == 'function')
+      decorator.apply(this, arguments);
+  })
+}
+
+function CallbackEndOfChain()
+{ // Copy current context and share it with all other chains
+  ShareContextToNext(this);
+}
+
+function ShareContextToNext(context)
+{ // Share context to next
+  context.escape = __this.escape;
+  __this.escape().across = context;
+}
+
+
+
+
+if (typeof __this.chain != 'object')
+  return phoxy.Log(2, "Empty chain");
+
+/* Get first tast, and if it not empty generate chain sequence
+ */
+
+
+var task = __this.chain.pop();
+if (!__this.chain.length) // if last one, direct render and exit
+  return __this.CascadeDesign(task, __this.data, CallbackEndOfChain);
+else
+{
+  var chain_snippet_location = __this.escape().name.replace(phoxy.Config().ejs_dir, "");
+
+  child_context =
+  {
+    design: chain_snippet_location,
+    data: __this,
+    up: ShareContextToNext,
+  };
+
+  var payload_context =
+  {
+    comment: "You will get valid context at chain callback. Please use __this.chain()",
+    chain: chain,
+    data: __this.data,
+  }
+
+  __this.CascadeDesign(task, payload_context);
+}
+%>

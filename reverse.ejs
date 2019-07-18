@@ -1,0 +1,33 @@
+<%
+/* Purpose: reverse order of each single token
+ * Usage:
+ *   __this.CascadeDesign('snippets/reverse', obj);
+ * Where object is:
+ * {
+ *   cb: function()
+ *   {
+ *     // HTML or any javascript code here
+ *     // Because this is callback, your valid context
+ *     // this, and not __this. If you get it, you could use both
+ *   }
+ * }
+ * How it done:
+ *   Before executing callback, snippet switches drawing canvas
+ *   After functor did his job, reversed canvas appends to current
+ * Notes:
+ *   Snippet reversing _EVERY_ single token. Commonly it suitable
+ *    only for Foreach Cascades (multiply cascade request on array elements)
+ * Functor example:
+ *   obj.cb = function()
+ *   {
+ *      < % <-- use without spaces of-course
+ *        < %@ __this.CascadeDesign('...', __this.something) % >
+ *      % >
+ *   })
+ */
+
+__this.cb();
+
+var just_drawed = __this.escape().DrawTo();
+__this.escape().DrawTo(just_drawed.reverse());
+%>
